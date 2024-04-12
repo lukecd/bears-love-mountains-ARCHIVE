@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Hero from "../../components/Hero"; // Adjust the path as necessary
+import dynamic from "next/dynamic";
+const Hero2 = dynamic(() => import("../../components/Hero2"), { ssr: false });
+// import Hero2 from "../../components/Hero2"; // Adjust the path as necessary
 import { useSearchParams } from "next/navigation";
 interface InfoBoxProps {
 	label: string;

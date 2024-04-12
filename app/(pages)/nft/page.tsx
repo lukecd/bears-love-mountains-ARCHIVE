@@ -1,5 +1,7 @@
 import React from "react";
-import Hero2 from "../../components/Hero2"; // Import Hero component
+import dynamic from "next/dynamic";
+const Hero2 = dynamic(() => import("../../components/Hero2"), { ssr: false });
+// import Hero2 from "../../components/Hero2"; // Import Hero component
 import NFTView from "../../components/NFTView"; // Import NFTView component
 import { Suspense } from "react";
 

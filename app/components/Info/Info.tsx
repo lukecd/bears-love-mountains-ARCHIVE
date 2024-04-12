@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from "react";
 
 import { Monoton } from "next/font/google";
-import BearSquare from "../BearSquare";
-
+// import BearSquare from "../BearSquare";
+import dynamic from "next/dynamic";
+const BearSquare = dynamic(() => import("../BearSquare"), { ssr: false });
 const monoton = Monoton({
 	weight: "400",
 	subsets: ["latin"],

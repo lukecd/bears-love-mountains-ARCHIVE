@@ -10,25 +10,6 @@ interface NFTsmallProps {
 	accentColor: string;
 }
 
-const MountainTripLoader = ({ imageUrl, animationUrl }) => {
-	useEffect(() => {
-		const loadHtmlContent = async () => {
-			try {
-				// Create an iframe and write the HTML content to it
-				const iframe = document.createElement("iframe");
-				iframe.style.border = "none";
-				iframe.style.overflow = "hidden";
-			} catch (error) {
-				console.error("Failed to load HTML content:", error);
-			}
-		};
-
-		loadHtmlContent();
-	}, []);
-
-	return <div id="iframeContainer" className="w-[600px] h-[600px] overflow-y-hidden"></div>;
-};
-
 const NFTsmall: React.FC<NFTsmallProps> = ({ imageUrl, animationUrl, id, mainColor, accentColor }) => {
 	const router = useRouter();
 	const showNFT = () => {

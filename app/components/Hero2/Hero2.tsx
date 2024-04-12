@@ -16,6 +16,8 @@ const Hero2: React.FC<Hero2Props> = ({ navbarMode }) => {
 	// const router = useRouter();
 
 	useEffect(() => {
+		if (typeof window === "undefined") return;
+
 		setIsSticky(navbarMode);
 		let game: Phaser.Game | null = null;
 

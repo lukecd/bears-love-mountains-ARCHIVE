@@ -193,9 +193,13 @@ export default class Boot extends Phaser.Scene {
 		// Apply a gradient to the text
 		const colors = ["#ff00ff", "#ffff00", "#00ffff", "#ff0000"];
 		buttonText.setTint(
+			//@ts-ignore
 			Phaser.Display.Color.GetColor(...colors[0].match(/\w\w/g).map((c) => parseInt(c, 16))),
+			//@ts-ignore
 			Phaser.Display.Color.GetColor(...colors[1].match(/\w\w/g).map((c) => parseInt(c, 16))),
+			//@ts-ignore
 			Phaser.Display.Color.GetColor(...colors[2].match(/\w\w/g).map((c) => parseInt(c, 16))),
+			//@ts-ignore
 			Phaser.Display.Color.GetColor(...colors[3].match(/\w\w/g).map((c) => parseInt(c, 16))),
 		);
 

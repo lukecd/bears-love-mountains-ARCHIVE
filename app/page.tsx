@@ -1,9 +1,11 @@
 "use client";
 import Image from "next/image";
-import Hero2 from "./components/Hero2/";
+import dynamic from "next/dynamic";
+const Hero2 = dynamic(() => import("./components/Hero2"), { ssr: false });
+
 import Quote from "./components/Quote";
 import Gallery from "./components/Gallery";
-import dynamic from "next/dynamic";
+import "./mock-browser-objects.js";
 
 export default function Home() {
 	// const AppWithoutSSR = dynamic(() => import("./DemoGame"), { ssr: false });
