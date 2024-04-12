@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		// "lib": ["dom", "dom.iterable", "esnext"],
+		"lib": ["es6", "dom", "dom.iterable", "scripthost"],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"noEmit": true,
+		"target": "es2015",
+		"esModuleInterop": true,
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"jsx": "preserve",
+		"incremental": true,
+		"plugins": [
+			{
+				"name": "next"
+			}
+		],
+		"paths": {
+			"@/*": ["./*"]
+		}
+	},
+	"typeRoots": ["./node_modules/phaser/types"],
+	"types": ["Phaser"],
+	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "game/scenes/shaders.js"],
+	"exclude": ["node_modules"]
+}

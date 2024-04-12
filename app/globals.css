@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Lexend+Mega:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Monoton&display=swap");
+
+@keyframes slide0 {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(+100%);
+	}
+}
+@keyframes slide1 {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(+100%);
+	}
+}
+/* Repeat for each layer, adjusting the percentages for different speeds if desired */
+
+.parallax-layer {
+	background-size: cover;
+}
+
+body {
+	font-family: "Lexend Mega", sans-serif;
+	background-color: white;
+}
+
+.climate-crisis {
+	font-family: "Climate Crisis", sans-serif;
+	font-optical-sizing: auto;
+	font-weight: 400;
+	font-style: normal;
+	font-variation-settings: "YEAR" 1979;
+}
+
+.lexend-mega-900 {
+	font-family: "Lexend Mega", sans-serif;
+	font-weight: 900;
+}
+
+.lexend-mega-300 {
+	font-family: "Lexend Mega", sans-serif;
+	font-weight: 300;
+}
+
+.monoton-regular {
+	font-family: "Monoton", sans-serif;
+	font-weight: 400;
+	font-style: normal;
+}
+
+.hero-text {
+	font-weight: 900; /* Black */
+}
+
+.light-text {
+	font-weight: 300; /* Light */
+}
+
+:root {
+	--foreground-rgb: 0, 0, 0;
+	--background-start-rgb: 214, 219, 220;
+	--background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--foreground-rgb: 255, 255, 255;
+		--background-start-rgb: 0, 0, 0;
+		--background-end-rgb: 0, 0, 0;
+	}
+}
+
+@layer utilities {
+	.text-balance {
+		text-wrap: balance;
+	}
+}

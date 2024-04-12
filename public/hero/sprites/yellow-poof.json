@@ -1,0 +1,188 @@
+{
+	"textures": [
+		{
+			"image": "yellow-poof.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 3104,
+				"h": 1731
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "yellow_smoke_puff_06.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 1129,
+						"h": 1024
+					},
+					"spriteSourceSize": {
+						"x": 18,
+						"y": 6,
+						"w": 1101,
+						"h": 1005
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 1101,
+						"h": 1005
+					}
+				},
+				{
+					"filename": "yellow_smoke_puff_07.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 1129,
+						"h": 1024
+					},
+					"spriteSourceSize": {
+						"x": 29,
+						"y": 64,
+						"w": 1010,
+						"h": 933
+					},
+					"frame": {
+						"x": 1104,
+						"y": 1,
+						"w": 1010,
+						"h": 933
+					}
+				},
+				{
+					"filename": "yellow_smoke_puff_05.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 1129,
+						"h": 1024
+					},
+					"spriteSourceSize": {
+						"x": 65,
+						"y": 91,
+						"w": 987,
+						"h": 883
+					},
+					"frame": {
+						"x": 2116,
+						"y": 1,
+						"w": 987,
+						"h": 883
+					}
+				},
+				{
+					"filename": "yellow_smoke_puff_08.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 1129,
+						"h": 1024
+					},
+					"spriteSourceSize": {
+						"x": 35,
+						"y": 91,
+						"w": 952,
+						"h": 844
+					},
+					"frame": {
+						"x": 2116,
+						"y": 886,
+						"w": 952,
+						"h": 844
+					}
+				},
+				{
+					"filename": "yellow_smoke_puff_04.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 1129,
+						"h": 1024
+					},
+					"spriteSourceSize": {
+						"x": 198,
+						"y": 146,
+						"w": 708,
+						"h": 688
+					},
+					"frame": {
+						"x": 1104,
+						"y": 936,
+						"w": 708,
+						"h": 688
+					}
+				},
+				{
+					"filename": "yellow_smoke_puff_03.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 1129,
+						"h": 1024
+					},
+					"spriteSourceSize": {
+						"x": 332,
+						"y": 288,
+						"w": 458,
+						"h": 450
+					},
+					"frame": {
+						"x": 1,
+						"y": 1008,
+						"w": 458,
+						"h": 450
+					}
+				},
+				{
+					"filename": "yellow_smoke_puff_02.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 1129,
+						"h": 1024
+					},
+					"spriteSourceSize": {
+						"x": 385,
+						"y": 368,
+						"w": 338,
+						"h": 310
+					},
+					"frame": {
+						"x": 461,
+						"y": 1008,
+						"w": 338,
+						"h": 310
+					}
+				},
+				{
+					"filename": "yellow_smoke_puff_01.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 1129,
+						"h": 1024
+					},
+					"spriteSourceSize": {
+						"x": 456,
+						"y": 443,
+						"w": 171,
+						"h": 164
+					},
+					"frame": {
+						"x": 461,
+						"y": 1320,
+						"w": 171,
+						"h": 164
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:61db316625c74d908a5235cac061f55b:30c6ebcc2aa825d4bb530560580d62fa:abf6f0e516b42adacae44adaf3b8f156$"
+	}
+}
