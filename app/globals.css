@@ -5,26 +5,17 @@
 @import url("https://fonts.googleapis.com/css2?family=Lexend+Mega:wght@100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Monoton&display=swap");
 
-@keyframes slide0 {
+@keyframes rotatePlanet {
 	from {
-		transform: translateX(0);
+		transform: rotate(0deg);
 	}
 	to {
-		transform: translateX(+100%);
+		transform: rotate(360deg);
 	}
 }
-@keyframes slide1 {
-	from {
-		transform: translateX(0);
-	}
-	to {
-		transform: translateX(+100%);
-	}
-}
-/* Repeat for each layer, adjusting the percentages for different speeds if desired */
 
-.parallax-layer {
-	background-size: cover;
+.rotate-forever {
+	animation: rotatePlanet 10s linear infinite;
 }
 
 body {
@@ -54,14 +45,6 @@ body {
 	font-family: "Monoton", sans-serif;
 	font-weight: 400;
 	font-style: normal;
-}
-
-.hero-text {
-	font-weight: 900; /* Black */
-}
-
-.light-text {
-	font-weight: 300; /* Light */
 }
 
 :root {

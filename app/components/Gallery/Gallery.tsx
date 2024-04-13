@@ -81,7 +81,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 
 	return (
 		<>
-			<div className="flex flex-wrap justify-center gap-4 mt-4 pb-30 pt-40 bg-gradient-to-b from-pink-500 via-pink-300 to-yellow-200">
+			<div className="flex flex-wrap justify-center gap-4 pt-10 pb-30 bg-gradient-to-b from-pink-500 via-pink-300 to-yellow-200">
 				{components}
 			</div>
 		</>

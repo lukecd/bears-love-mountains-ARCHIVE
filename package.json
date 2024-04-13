@@ -13,7 +13,7 @@
     "phaser": "^3.80.1",
     "react": "^18",
     "react-dom": "^18",
-    "thirdweb": "^1.0.0-beta-75bec3710151c4255c8314e3ce8dd366265b6c58-20240317031400"
+    "thirdweb": "^5.5.0"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -4,6 +4,31 @@ import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 const Hero2 = dynamic(() => import("../../components/Hero2"), { ssr: false });
 // import Hero2 from "../../components/Hero2"; // Adjust the path as necessary
+import { createThirdwebClient, defineChain } from "thirdweb";
+import { useConnect } from "thirdweb/react";
+import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
+import { MediaRenderer } from "thirdweb/react";
+
+const client = createThirdwebClient({
+	clientId: THIRD_WEB_CLIENT_ID,
+});
+
+const beraChain = defineChain(80085);
+
+import { ThirdwebProvider, ConnectButton, darkTheme } from "thirdweb/react";
+import { createWallet, walletConnect, inAppWallet } from "thirdweb/wallets";
+
+const wallets = [
+	createWallet("io.metamask"),
+	createWallet("com.coinbase.wallet"),
+	walletConnect(),
+	inAppWallet({
+		auth: {
+			options: ["email", "google", "apple", "facebook"],
+		},
+	}),
+];
+
 import { useSearchParams } from "next/navigation";
 interface InfoBoxProps {
 	label: string;
@@ -19,7 +44,7 @@ const InfoBox: React.FC<InfoBoxProps> = ({ label, value, mainColor, accentColor 
 				borderColor: mainColor,
 				borderWidth: "2px",
 				borderStyle: "solid",
-				boxShadow: `2px 2px ${accentColor}`,
+				// boxShadow: `2px 2px ${accentColor}`,
 			}}
 		>
 			<div
@@ -44,7 +69,6 @@ const InfoBox: React.FC<InfoBoxProps> = ({ label, value, mainColor, accentColor 
 	);
 };
 
-//@ts-ignore
 //@ts-ignore
 const MountainTripLoader = ({ data }) => {
 	useEffect(() => {
@@ -104,6 +128,7 @@ const NFTView = () => {
 	const doMint = () => {
 		setMintSuccess(true);
 	};
+	const { connect, isConnecting, error } = useConnect();
 
 	return (
 		// Create a flexbox div with a background image
@@ -127,12 +152,12 @@ const NFTView = () => {
 			)}
 			<div className=" bg-slate-900 flex flex-col md:flex-row items-end rounded-lg px-5 py-5">
 				{data && <MountainTripLoader data={data} />}
-				{/* <img src="/bearslovemountains-1.png" alt="Mountain Trip" className="w-[600px] h-[600px]" /> */}
+				{/* <MediaRenderer client={client} src="https://node1.irys.xyz/iHlxYd6Vyp30oJkI6fzBfBEmL6fRG9v7hkYOq0RwLp4" /> */}
 				<div className="md:w-1/2 p-4 flex flex-col justify-end">
 					<InfoBox label="Name" value={name} mainColor={mainColor} accentColor={accentColor} />
 					<InfoBox label="Symbol" value={symbol} mainColor={mainColor} accentColor={accentColor} />
 					<InfoBox label="Price" value={`${price} BERA`} mainColor={mainColor} accentColor={accentColor} />
-					<button
+					{/* <button
 						className="lexend-mega-900 h-12 border-2 p-2.5 rounded-full font-bold text-white mt-4 lexend-mega-900"
 						style={{
 							backgroundColor: mainColor,
@@ -142,7 +167,24 @@ const NFTView = () => {
 						onClick={doMint}
 					>
 						Mint
-					</button>
+					</button> */}
+					<ThirdwebProvider>
+						<ConnectButton
+							client={client}
+							theme={darkTheme({
+								colors: {
+									modalBg: mainColor,
+									accentText: "#FFFFFF",
+									accentButtonBg: accentColor,
+									accentButtonText: "#FFFFFF",
+								},
+							})}
+							connectModal={{
+								size: "wide",
+								showThirdwebBranding: false,
+							}}
+						/>
+					</ThirdwebProvider>{" "}
 				</div>
 			</div>
 

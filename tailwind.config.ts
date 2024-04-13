@@ -12,6 +12,9 @@ const config: Config = {
 				main: "#FF88E6",
 				accent: "#22A093",
 			},
+			boxShadow: {
+				heavy: "0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.5)",
+			},
 		},
 	},
 	plugins: [],
