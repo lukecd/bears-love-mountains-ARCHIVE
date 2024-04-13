@@ -150,10 +150,10 @@ const NFTView = () => {
 					</div>
 				</div>
 			)}
-			<div className=" bg-slate-900 flex flex-col md:flex-row items-end rounded-lg px-5 py-5">
+			<div className=" bg-slate-900 flex flex-col md:flex-row lg:items-end rounded-lg px-5 py-5">
 				{data && <MountainTripLoader data={data} />}
 				{/* <MediaRenderer client={client} src="https://node1.irys.xyz/iHlxYd6Vyp30oJkI6fzBfBEmL6fRG9v7hkYOq0RwLp4" /> */}
-				<div className="md:w-1/2 p-4 flex flex-col justify-end">
+				<div className="md:w-1/2 p-4 flex flex-col justify-center md:justify-end">
 					<InfoBox label="Name" value={name} mainColor={mainColor} accentColor={accentColor} />
 					<InfoBox label="Symbol" value={symbol} mainColor={mainColor} accentColor={accentColor} />
 					<InfoBox label="Price" value={`${price} BERA`} mainColor={mainColor} accentColor={accentColor} />

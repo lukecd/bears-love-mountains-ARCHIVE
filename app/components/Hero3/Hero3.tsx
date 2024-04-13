@@ -82,7 +82,7 @@ const Hero3: React.FC<Hero3Props> = ({ className, navbarMode }) => {
 						autoPlay
 						loop
 						muted
-						className="absolute z-50"
+						className="hidden md:block absolute z-50"
 						style={{
 							top: "calc(60vh - 120px)",
 							left: "66%",
@@ -94,7 +94,7 @@ const Hero3: React.FC<Hero3Props> = ({ className, navbarMode }) => {
 						autoPlay
 						loop
 						muted
-						className="absolute z-30"
+						className="hidden md:block absolute z-30"
 						style={{ top: "40%", left: "3%", scale: "0.5" }}
 					/>
 					<video
@@ -102,7 +102,7 @@ const Hero3: React.FC<Hero3Props> = ({ className, navbarMode }) => {
 						autoPlay
 						loop
 						muted
-						className="absolute z-20 "
+						className="hidden md:block absolute z-20 "
 						style={{ top: "-40px", left: "65%", transform: "scale(0.9) rotate(180deg)" }}
 					/>
 					<div
@@ -131,7 +131,7 @@ const Hero3: React.FC<Hero3Props> = ({ className, navbarMode }) => {
 					<img
 						src="/hero/mountains/planet-4.png"
 						alt="Stationary Planet"
-						className="rotate-forever"
+						className="hidden md:block rotate-forever"
 						style={{
 							filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
 							left: "20%",
@@ -143,7 +143,7 @@ const Hero3: React.FC<Hero3Props> = ({ className, navbarMode }) => {
 					<img
 						src="/hero/mountains/planet-6.png"
 						alt="Stationary Planet"
-						className="rotate-forever"
+						className="hidden md:block rotate-forever"
 						style={{
 							filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
 							left: "30%",
@@ -155,7 +155,7 @@ const Hero3: React.FC<Hero3Props> = ({ className, navbarMode }) => {
 					<img
 						src="/hero/mountains/planet-8.png"
 						alt="Stationary Planet"
-						className="rotate-forever"
+						className="hidden md:block rotate-forever"
 						style={{
 							filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
 							left: "5%",
@@ -167,7 +167,7 @@ const Hero3: React.FC<Hero3Props> = ({ className, navbarMode }) => {
 					<img
 						src="/hero/mountains/planet-9.png"
 						alt="Stationary Planet"
-						className="rotate-forever"
+						className="hidden md:block rotate-forever"
 						style={{
 							filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
 							left: "15%",
