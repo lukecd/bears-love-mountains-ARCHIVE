@@ -125,7 +125,7 @@ const NFTView = () => {
 					</div>
 				</div>
 			)}
-			<div className=" bg-slate-900 flex flex-row items-end rounded-lg px-5 py-5">
+			<div className=" bg-slate-900 flex flex-col md:flex-row items-end rounded-lg px-5 py-5">
 				{data && <MountainTripLoader data={data} />}
 				{/* <img src="/bearslovemountains-1.png" alt="Mountain Trip" className="w-[600px] h-[600px]" /> */}
 				<div className="md:w-1/2 p-4 flex flex-col justify-end">
@@ -145,17 +145,12 @@ const NFTView = () => {
 					</button>
 				</div>
 			</div>
+
 			<video
 				src="/hero/video-sprites/bear3.webm"
 				autoPlay
 				loop
-				style={{
-					position: "absolute",
-					bottom: 0 - 70,
-					left: 0 - 100,
-					// width: "50%",
-					scale: "0.9",
-				}}
+				className="hidden md:block absolute bottom-[-70px] left-[-100px] scale-90"
 			></video>
 		</div>
 	);
