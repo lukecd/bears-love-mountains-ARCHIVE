@@ -24,7 +24,6 @@
 		}
 	},
 	"typeRoots": ["./node_modules/phaser/types"],
-	"types": ["Phaser"],
 	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "game/scenes/shaders.js"],
 	"exclude": ["node_modules"]
 }

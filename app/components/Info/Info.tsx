@@ -1,9 +1,7 @@
 import React, { useEffect, useRef } from "react";
 
 import { Monoton } from "next/font/google";
-// import BearSquare from "../BearSquare";
 import dynamic from "next/dynamic";
-const BearSquare = dynamic(() => import("../BearSquare"), { ssr: false });
 const monoton = Monoton({
 	weight: "400",
 	subsets: ["latin"],
@@ -71,13 +69,12 @@ const Info: React.FC<InfoProps> = ({ id, mainColor, accentColor }) => {
 			break;
 		case 4:
 			content = (
-				<BearSquare />
-				// <div style={style} className="lexend-mega-300 flex flex-col w-full md:w-1/3 lg:w-1/4 justify-end items-end p-3">
-				// 	<p className="leading-none">Summit{"'"}s silent song,</p>
-				// 	<p className="leading-none">Solitude whispers wisdom,</p>
-				// 	<p className="leading-none">Soul feasts on the calm.</p>
-				// 	<p className={`leading-none lg:text-xl text-sm mt-3`}>-Mountain Bear</p>
-				// </div>
+				<div style={style} className="lexend-mega-300 flex flex-col w-full md:w-1/3 lg:w-1/4 justify-end items-end p-3">
+					<p className="leading-none">Summit{"'"}s silent song,</p>
+					<p className="leading-none">Solitude whispers wisdom,</p>
+					<p className="leading-none">Soul feasts on the calm.</p>
+					<p className={`leading-none lg:text-xl text-sm mt-3`}>-Mountain Bear</p>
+				</div>
 			);
 			break;
 		case 5:

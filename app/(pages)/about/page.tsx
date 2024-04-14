@@ -1,7 +1,5 @@
 import React from "react";
-// import Hero2 from "../../components/Hero2"; // Import Hero component
 import dynamic from "next/dynamic";
-const Hero2 = dynamic(() => import("../../components/Hero2"), { ssr: false });
 
 import NFTView from "../../components/NFTView"; // Import NFTView component
 import { Suspense } from "react";
@@ -9,8 +7,6 @@ import { Suspense } from "react";
 const Page = () => {
 	return (
 		<div className=" bg-white">
-			<Hero2 navbarMode={true} />
-
 			<div className="flex flex-col min-h-screen mt-15 px-10 text-black">
 				<br />
 				<br />

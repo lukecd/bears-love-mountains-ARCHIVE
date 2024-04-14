@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-const Hero2 = dynamic(() => import("../../components/Hero2"), { ssr: false });
-// import Hero2 from "../../components/Hero2"; // Adjust the path as necessary
+
 import { createThirdwebClient, defineChain } from "thirdweb";
 import { useConnect } from "thirdweb/react";
 import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
