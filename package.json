@@ -13,6 +13,7 @@
     "phaser": "^3.80.1",
     "react": "^18",
     "react-dom": "^18",
+    "react-query": "^3.39.3",
     "thirdweb": "^5.5.0"
   },
   "devDependencies": {

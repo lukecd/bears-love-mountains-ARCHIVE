@@ -5,11 +5,20 @@ import dynamic from "next/dynamic";
 import Quote from "./components/Quote";
 import Gallery from "./components/Gallery";
 import Hero3 from "./components/Hero3";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { sepolia } from "thirdweb/chains";
+import { ThirdwebProvider } from "thirdweb/react";
+const queryClient = new QueryClient();
 
 export default function Home() {
 	return (
 		<main className="flex flex-col items-center justify-center bg-white min-h-screen">
-			<Hero3 navbarMode={false} /> <Gallery showAll={true} />
+			<ThirdwebProvider>
+				<QueryClientProvider client={queryClient}>
+					<Hero3 navbarMode={false} />
+					<Gallery showAll={true} />
+				</QueryClientProvider>
+			</ThirdwebProvider>
 		</main>
 	);
 }
