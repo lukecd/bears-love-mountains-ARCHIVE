@@ -76,6 +76,9 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 					};
 					metadataBuilder.push(metadata);
 				}
+				// Sort metadataBuilder by id
+				metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
+
 				setAllNftMetadata(metadataBuilder);
 				console.log({ metadataBuilder });
 			}
@@ -84,6 +87,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 
 	return (
 		<div className="flex flex-wrap justify-center w-full gap-4 pt-10 pb-30 bg-gradient-to-b from-pink-500 via-pink-300 to-yellow-200">
+			{!allNftMetadata && <h1 className="text-3xl h-full text-white">Loading...</h1>}
 			{allNftMetadata &&
 				allNftMetadata.map((nft: NFTMetadata, i) => (
 					<div

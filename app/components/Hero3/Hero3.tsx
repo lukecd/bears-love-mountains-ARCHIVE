@@ -94,7 +94,7 @@ const Hero3: React.FC<Hero3Props> = ({ className, navbarMode }) => {
 						autoPlay
 						loop
 						muted
-						className="hidden md:block absolute z-30"
+						className="hidden lg:block absolute z-30"
 						style={{ top: "40%", left: "3%", scale: "0.5" }}
 					/>
 					<video
