@@ -3,18 +3,23 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-import { createThirdwebClient, defineChain } from "thirdweb";
 import { useConnect } from "thirdweb/react";
+import { useRouter } from "next/navigation";
+import { getContract } from "thirdweb";
+import { sepolia } from "thirdweb/chains";
+import { MediaRenderer, useReadContract } from "thirdweb/react";
+import { createThirdwebClient, defineChain } from "thirdweb";
 import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
-import { MediaRenderer } from "thirdweb/react";
+import { totalListings, getListing } from "thirdweb/extensions/marketplace";
+import { prepareContractCall, toWei } from "thirdweb";
+import { useActiveWallet } from "thirdweb/react";
+import { useActiveAccount } from "thirdweb/react";
 
 const client = createThirdwebClient({
 	clientId: THIRD_WEB_CLIENT_ID,
 });
 
-const beraChain = defineChain(80085);
-
-import { ThirdwebProvider, ConnectButton, darkTheme } from "thirdweb/react";
+import { ThirdwebProvider, ConnectButton, TransactionButton, darkTheme } from "thirdweb/react";
 import { createWallet, walletConnect, inAppWallet } from "thirdweb/wallets";
 
 const wallets = [
@@ -28,7 +33,6 @@ const wallets = [
 	}),
 ];
 
-import { useSearchParams } from "next/navigation";
 interface InfoBoxProps {
 	label: string;
 	value: string;
@@ -68,42 +72,28 @@ const InfoBox: React.FC<InfoBoxProps> = ({ label, value, mainColor, accentColor 
 	);
 };
 
-//@ts-ignore
-const MountainTripLoader = ({ data }) => {
-	useEffect(() => {
-		const loadHtmlContent = async () => {
-			try {
-				const response = await fetch(`https://gateway.irys.xyz/${data}`);
-				const html = await response.text();
-
-				// Create an iframe and write the HTML content to it
-				const iframe = document.createElement("iframe");
-				iframe.style.width = "500px";
-				iframe.style.height = "500px";
-				iframe.style.border = "none";
-				iframe.style.overflow = "hidden";
-
-				document.getElementById("iframeContainer")?.appendChild(iframe);
-				iframe.contentWindow?.document.open();
-				iframe.contentWindow?.document.write(html);
-				iframe.contentWindow?.document.close();
-			} catch (error) {
-				console.error("Failed to load HTML content:", error);
-			}
-		};
-
-		loadHtmlContent();
-	}, []);
-
-	// Ensuring the container is also styled to be a square
-	return <div id="iframeContainer" style={{ width: "550px", height: "500px", overflow: "hidden" }}></div>;
+type NFTViewProps = {
+	id: string; // Define a type for the component props
 };
 
-const NFTView = () => {
-	const [data, setData] = useState<string | null>(null);
-	const [name, setName] = useState("");
-	const [symbol, setSymbol] = useState("");
-	const [price, setPrice] = useState(0);
+interface NFTMetadata {
+	id: number;
+	price?: string;
+	token?: string;
+	image?: string;
+	name?: string;
+	animation_url?: string;
+	description?: string;
+}
+
+const NFTView: React.FC<NFTViewProps> = ({ id }) => {
+	const contract = getContract({
+		client,
+		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
+		chain: sepolia,
+	});
+
+	const [nftMetadata, setNftMetadata] = useState<NFTMetadata | null>(null);
 
 	const [mintSuccess, setMintSuccess] = useState(false);
 	// Main and Accent Colors
@@ -113,15 +103,23 @@ const NFTView = () => {
 	const [mainColor, setMainColor] = useState<string>(mainColors[colorIndex]);
 	const [accentColor, setAccentColor] = useState<string>(accentColors[colorIndex]);
 
-	const searchParams = useSearchParams();
-
 	useEffect(() => {
-		// Simulate fetching data
-		setSymbol("MNTN");
-		setPrice(1);
-		const dataParam = searchParams.get("data");
-		setData(dataParam);
-		setName(`Bears Love Mountains #42`);
+		const loadNFTdata = async () => {
+			// convert id to Bigint
+			const bigId = BigInt(id);
+			const listing = await getListing({ contract, listingId: bigId });
+
+			const idNumber = Number(listing.asset.id.toString());
+			const price = listing.currencyValuePerToken.displayValue;
+			const metadata: NFTMetadata = {
+				...listing.asset.metadata,
+				id: idNumber,
+				price: price,
+				token: listing.currencyValuePerToken.symbol,
+			};
+			setNftMetadata(metadata);
+		};
+		loadNFTdata();
 	}, []);
 
 	const doMint = () => {
@@ -129,63 +127,69 @@ const NFTView = () => {
 	};
 	const { connect, isConnecting, error } = useConnect();
 
+	const activeAccount = useActiveAccount();
+	const wallet = useActiveWallet();
+	console.log("activeAccount", activeAccount);
+
 	return (
 		// Create a flexbox div with a background image
-		<div className="mt-10 pt-10 flex flex-col items-center justify-center w-full h-screen">
-			{mintSuccess && (
-				<div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-					<div className="w-96 px-8 py-4 bg-main border-4 border-accent shadow-[8px_8px_0px_rgba(34, 160, 147, 1)]">
-						<div>
-							<h1 className="lexend-mega-300 text-2xl mb-4 text-center">Congrats, you{"'"}re one of 42 lucky bears.</h1>
-							<div className="flex justify-center space-x-2 w-full">
-								<button
-									onClick={() => setMintSuccess(false)}
-									className="lexend-mega-300 h-12 border-black border-2 p-2.5 bg-main hover:bg-accent hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] active:bg-[#00E1EF] rounded-full"
-								>
-									Nice!
-								</button>
+		<div className="flex flex-row items-center justify-center w-full h-screen">
+			{nftMetadata && (
+				<>
+					<div className={`flex flex-col justify-center items-center bg-white p-3 lg:pb-5 pb-1 px-5 rounded-2xl`}>
+						{" "}
+						<MediaRenderer
+							className="h-auto cursor-pointer rounded-2xl rounded-lg"
+							client={client}
+							src={nftMetadata.animation_url}
+							width="500px"
+							height="500px"
+						/>
+						<div className="w-full rounded-md pr-2 pb-1 lexend-mega-300">
+							<h1 className={`lexend-mega-300 mt-3 text-right text-2xl  text-black`}>
+								Bears Love Mountains #{nftMetadata.id}
+							</h1>
+							<h1 className={`lexend-mega-300 text-right text-xl  text-black`}>
+								Price {nftMetadata.price} {nftMetadata.token}
+							</h1>
+						</div>
+						<div className="mt-3 flex flex-row text-right justify-end w-full">
+							<ConnectButton
+								client={client}
+								theme={darkTheme({
+									colors: {
+										primaryButtonBg: mainColor,
+										primaryButtonText: "#FFFFFF",
+									},
+								})}
+								connectModal={{
+									size: "wide",
+									showThirdwebBranding: false,
+								}}
+							/>
+							<div className="ml-2">
+								{activeAccount && (
+									<TransactionButton
+										className="bg-red"
+										transaction={() => {
+											// Create a transaction object and return it
+											const tx = prepareContractCall({
+												contract,
+												//@ts-ignore
+												method: "mint",
+												params: [activeAccount?.address, toWei("1")],
+											});
+											return tx;
+										}}
+									>
+										Mint
+									</TransactionButton>
+								)}
 							</div>
 						</div>
 					</div>
-				</div>
+				</>
 			)}
-			<div className=" bg-slate-900 flex flex-col md:flex-row lg:items-end rounded-lg px-5 py-5">
-				{data && <MountainTripLoader data={data} />}
-				{/* <MediaRenderer client={client} src="https://node1.irys.xyz/iHlxYd6Vyp30oJkI6fzBfBEmL6fRG9v7hkYOq0RwLp4" /> */}
-				<div className="md:w-1/2 p-4 flex flex-col justify-center md:justify-end">
-					<InfoBox label="Name" value={name} mainColor={mainColor} accentColor={accentColor} />
-					<InfoBox label="Symbol" value={symbol} mainColor={mainColor} accentColor={accentColor} />
-					<InfoBox label="Price" value={`${price} BERA`} mainColor={mainColor} accentColor={accentColor} />
-					{/* <button
-						className="lexend-mega-900 h-12 border-2 p-2.5 rounded-full font-bold text-white mt-4 lexend-mega-900"
-						style={{
-							backgroundColor: mainColor,
-							borderColor: accentColor,
-							boxShadow: `2px 2px ${accentColor}`,
-						}}
-						onClick={doMint}
-					>
-						Mint
-					</button> */}
-					<ThirdwebProvider>
-						<ConnectButton
-							client={client}
-							theme={darkTheme({
-								colors: {
-									modalBg: mainColor,
-									accentText: "#FFFFFF",
-									accentButtonBg: accentColor,
-									accentButtonText: "#FFFFFF",
-								},
-							})}
-							connectModal={{
-								size: "wide",
-								showThirdwebBranding: false,
-							}}
-						/>
-					</ThirdwebProvider>{" "}
-				</div>
-			</div>
 
 			<video
 				src="/hero/video-sprites/bear3.webm"

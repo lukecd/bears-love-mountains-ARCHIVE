@@ -10,7 +10,7 @@ import { sepolia } from "thirdweb/chains";
 import { createThirdwebClient, defineChain } from "thirdweb";
 import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
 import { totalListings, getAllListings } from "thirdweb/extensions/marketplace";
-
+import Link from "next/link";
 const client = createThirdwebClient({
 	clientId: THIRD_WEB_CLIENT_ID,
 });
@@ -33,14 +33,13 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [allNftMetadata, setAllNftMetadata] = useState<NFTMetadata[]>([]);
 	const mainColors = ["#E24330", "#8C262E", "#90A9EE", "#98282B", "#E24330"];
 	const accentColors = ["#FEC901", "#FF7B02", "#F0F22F", "#FE91E7", "#FE91E7"];
-	//:
+
 	const contract = getContract({
 		client,
 		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
 		chain: sepolia,
 	});
-	console.log({ contract });
-	const three = BigInt(4);
+
 	const { data: nftCount } = useReadContract(totalListings, { contract });
 
 	const { data: nfts } = useReadContract(getAllListings, {
@@ -92,17 +91,19 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 				allNftMetadata.map((nft: NFTMetadata, i) => (
 					<div
 						style={{ boxShadow: `0 4px 6px #FEC901` }}
-						key={i}
 						className={`flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-white p-3 lg:pb-5 pb-1`}
+						key={i}
 					>
 						{" "}
-						<MediaRenderer
-							className={`h-auto hover:scale-105 transition-transform duration-300 cursor-pointer shadow-md rounded-lg `}
-							client={client}
-							src={nft.image}
-							width="100%"
-							height="100%"
-						/>
+						<Link href={`/nft/${nft.id}`}>
+							<MediaRenderer
+								className={`h-auto hover:scale-105 transition-transform duration-300 cursor-pointer shadow-md rounded-lg `}
+								client={client}
+								src={nft.image}
+								width="100%"
+								height="100%"
+							/>
+						</Link>
 						<div className="w-full rounded-md pr-2 pb-1 lexend-mega-300">
 							<h1 className={`lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-black`}>
 								Bears Love Mountains #{nft.id}
