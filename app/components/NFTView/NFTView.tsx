@@ -5,15 +5,16 @@ import dynamic from "next/dynamic";
 
 import { useConnect } from "thirdweb/react";
 import { useRouter } from "next/navigation";
-import { getContract } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
 import { MediaRenderer, useReadContract } from "thirdweb/react";
 import { createThirdwebClient, defineChain } from "thirdweb";
 import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
-import { totalListings, getListing } from "thirdweb/extensions/marketplace";
-import { prepareContractCall, toWei } from "thirdweb";
+import { totalListings, getListing, buyFromListing } from "thirdweb/extensions/marketplace";
 import { useActiveWallet } from "thirdweb/react";
 import { useActiveAccount } from "thirdweb/react";
+import { prepareContractCall, getContract, toWei } from "thirdweb";
+import { useSendTransaction } from "thirdweb/react";
+import { useWaitForReceipt } from "thirdweb/react";
 
 const client = createThirdwebClient({
 	clientId: THIRD_WEB_CLIENT_ID,
@@ -82,9 +83,9 @@ const DescriptionBox: React.FC<DescriptionBoxProps> = ({ description }) => {
 	return (
 		<div className="flex flex-col items-center mt-5">
 			{lines.map((line, index) => (
-				<div key={index} className="lexend-mega-300 text-center text-2xl">
+				<h1 key={index} className="lexend-mega-300 text-center text-2xl ">
 					{line}
-				</div>
+				</h1>
 			))}
 		</div>
 	);
@@ -110,7 +111,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
 		chain: sepolia,
 	});
-
+	const { mutate: sendTransaction, isPending } = useSendTransaction();
 	const [nftMetadata, setNftMetadata] = useState<NFTMetadata | null>(null);
 
 	const [mintSuccess, setMintSuccess] = useState(false);
@@ -124,7 +125,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	useEffect(() => {
 		const loadNFTdata = async () => {
 			// convert id to Bigint
-			const bigId = BigInt(id);
+			const bigId = BigInt(parseInt(id) + 1);
 			const listing = await getListing({ contract, listingId: bigId });
 
 			const idNumber = Number(listing.asset.id.toString());
@@ -140,8 +141,17 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		loadNFTdata();
 	}, []);
 
-	const doMint = () => {
-		setMintSuccess(true);
+	const doMint = async () => {
+		console.log("Minting NFT to account: ", activeAccount?.address);
+		const tx = await buyFromListing({
+			contract,
+			listingId: BigInt(parseInt(id) + 1),
+			quantity: BigInt(1),
+			recipient: activeAccount?.address!,
+		});
+		console.log("tx", tx);
+		const receipt = await sendTransaction(tx);
+		console.log("receipt", receipt);
 	};
 	const { connect, isConnecting, error } = useConnect();
 
@@ -151,7 +161,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	return (
 		// Create a flexbox div with a background image
-		<div className="flex flex-row justify-center w-full">
+		<div className="flex flex-row justify-center w-full h-screen">
 			<div className="flex flex-col md:flex-row mt-20 w-full md:ml-20">
 				{nftMetadata && (
 					<>
@@ -175,7 +185,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 						</div>
 						<div className="flex flex-col h-full rounded-2xl px-5 py-5 mt-10">
 							<DescriptionBox description={nftMetadata.description!} />
-							<div className="flex flex-col items-center mt-10">
+							<div className="flex flex-col items-center mt-10 w-full">
 								<ConnectButton
 									client={client}
 									theme={darkTheme({
@@ -189,22 +199,19 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 										showThirdwebBranding: false,
 									}}
 								/>
-								<div className=" mt-10">
-									<TransactionButton
-										className="bg-red"
-										transaction={() => {
-											// Create a transaction object and return it
-											const tx = prepareContractCall({
-												contract,
-												//@ts-ignore
-												method: "mint",
-												params: [activeAccount?.address, toWei("1")],
-											});
-											return tx;
+								<div className="w-full mt-10">
+									<button
+										className="lexend-mega-900 h-12 border-2 p-2.5 rounded-full font-bold text-white mt-4 lexend-mega-900 w-full"
+										disabled={activeAccount ? false : true}
+										style={{
+											backgroundColor: mainColor,
+											borderColor: accentColor,
+											boxShadow: `2px 2px ${accentColor}`,
 										}}
+										onClick={doMint}
 									>
-										{"   "}Mint{"   "}
-									</TransactionButton>
+										{isPending ? "Minting..." : "Buy Now"}
+									</button>
 								</div>
 							</div>
 						</div>

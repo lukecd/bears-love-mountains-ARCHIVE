@@ -5,6 +5,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Lexend+Mega:wght@100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Monoton&display=swap");
 
+@layer utilities {
+	.aspect-square {
+		padding-top: 100%;
+	}
+}
+
 @keyframes rotatePlanet {
 	from {
 		transform: rotate(0deg);

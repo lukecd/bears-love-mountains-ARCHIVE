@@ -33,7 +33,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [allNftMetadata, setAllNftMetadata] = useState<NFTMetadata[]>([]);
 	const mainColors = ["#E24330", "#8C262E", "#90A9EE", "#98282B", "#E24330"];
 	const accentColors = ["#FEC901", "#FF7B02", "#F0F22F", "#FE91E7", "#FE91E7"];
-	const placeholderCount = 42; // There will be exactly 42 items
+	const placeholderCount = 39; // There will be exactly 42 items
 
 	const contract = getContract({
 		client,
