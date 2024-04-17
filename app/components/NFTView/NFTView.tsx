@@ -192,7 +192,6 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 								<div className=" mt-10">
 									<TransactionButton
 										className="bg-red"
-										enabled={!activeAccount}
 										transaction={() => {
 											// Create a transaction object and return it
 											const tx = prepareContractCall({
