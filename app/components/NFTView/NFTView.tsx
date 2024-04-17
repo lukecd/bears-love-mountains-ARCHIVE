@@ -152,10 +152,10 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	return (
 		// Create a flexbox div with a background image
 		<div className="flex flex-row justify-center w-full h-screen">
-			<div className="flex flex-row mt-20 w-full ml-20">
+			<div className="flex flex-col md:flex-row mt-20 w-full md:ml-20">
 				{nftMetadata && (
 					<>
-						<div className="w-4/6 h-full flex flex-col rounded-2xl px-5 py-5">
+						<div className="w-full md:w-4/6 h-full flex flex-col rounded-2xl md:px-5 md:py-5">
 							{" "}
 							<MediaRenderer
 								className="h-auto cursor-pointer mt-10 border-8 border-[#FEC901] shadow-2xl"
