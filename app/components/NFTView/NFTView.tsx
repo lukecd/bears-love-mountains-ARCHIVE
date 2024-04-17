@@ -39,6 +39,7 @@ interface InfoBoxProps {
 	mainColor: string;
 	accentColor: string;
 }
+
 const InfoBox: React.FC<InfoBoxProps> = ({ label, value, mainColor, accentColor }) => {
 	return (
 		<div
@@ -68,6 +69,23 @@ const InfoBox: React.FC<InfoBoxProps> = ({ label, value, mainColor, accentColor 
 			>
 				{value}
 			</div>
+		</div>
+	);
+};
+
+interface DescriptionBoxProps {
+	description: string;
+}
+
+const DescriptionBox: React.FC<DescriptionBoxProps> = ({ description }) => {
+	const lines = description.split(",");
+	return (
+		<div className="flex flex-col items-center mt-5">
+			{lines.map((line, index) => (
+				<div key={index} className="lexend-mega-300 text-center text-2xl">
+					{line}
+				</div>
+			))}
 		</div>
 	);
 };
@@ -133,69 +151,74 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	return (
 		// Create a flexbox div with a background image
-		<div className="flex flex-row items-center justify-center w-full h-screen">
-			{nftMetadata && (
-				<>
-					<div className={`flex flex-col justify-center items-center bg-white p-3 lg:pb-5 pb-1 px-5 rounded-2xl`}>
-						{" "}
-						<MediaRenderer
-							className="h-auto cursor-pointer rounded-2xl rounded-lg"
-							client={client}
-							src={nftMetadata.animation_url}
-							width="500px"
-							height="500px"
-						/>
-						<div className="w-full rounded-md pr-2 pb-1 lexend-mega-300">
-							<h1 className={`lexend-mega-300 mt-3 text-right text-2xl  text-black`}>
-								Bears Love Mountains #{nftMetadata.id}
-							</h1>
-							<h1 className={`lexend-mega-300 text-right text-xl  text-black`}>
-								Price {nftMetadata.price} {nftMetadata.token}
-							</h1>
-						</div>
-						<div className="mt-3 flex flex-row text-right justify-end w-full">
-							<ConnectButton
+		<div className="flex flex-row justify-between w-full h-screen">
+			<div className="flex flex-row mt-20 w-full ml-20">
+				{nftMetadata && (
+					<>
+						<div className="w-4/6 h-full flex flex-col rounded-2xl px-5 py-5">
+							{" "}
+							<MediaRenderer
+								className="h-auto cursor-pointer mt-10 border-8 border-[#FEC901] shadow-2xl"
 								client={client}
-								theme={darkTheme({
-									colors: {
-										primaryButtonBg: mainColor,
-										primaryButtonText: "#FFFFFF",
-									},
-								})}
-								connectModal={{
-									size: "wide",
-									showThirdwebBranding: false,
-								}}
+								src={nftMetadata.animation_url}
+								width="100%"
+								height="100%"
 							/>
-							<div className="ml-2">
-								{activeAccount && (
-									<TransactionButton
-										className="bg-red"
-										transaction={() => {
-											// Create a transaction object and return it
-											const tx = prepareContractCall({
-												contract,
-												//@ts-ignore
-												method: "mint",
-												params: [activeAccount?.address, toWei("1")],
-											});
-											return tx;
-										}}
-									>
-										Mint
-									</TransactionButton>
-								)}
+							<div className="w-full rounded-md pr-2 pb-1 lexend-mega-300">
+								<h1 className={`lexend-mega-300 mt-3 text-right text-2xl  text-black`}>
+									Bears Love Mountains #{nftMetadata.id}
+								</h1>
+								<h1 className={`lexend-mega-300 text-right text-xl  text-black`}>
+									Price {nftMetadata.price} {nftMetadata.token}
+								</h1>
 							</div>
 						</div>
-					</div>
-				</>
-			)}
-
+						<div className="flex flex-col rounded-2xl px-5 py-5 mt-10">
+							<DescriptionBox description={nftMetadata.description!} />
+							<div className="">
+								<ConnectButton
+									client={client}
+									theme={darkTheme({
+										colors: {
+											primaryButtonBg: mainColor,
+											primaryButtonText: "#FFFFFF",
+										},
+									})}
+									connectModal={{
+										size: "wide",
+										showThirdwebBranding: false,
+									}}
+								/>
+								<div className="ml-2">
+									{activeAccount && (
+										<TransactionButton
+											className="bg-red"
+											transaction={() => {
+												// Create a transaction object and return it
+												const tx = prepareContractCall({
+													contract,
+													//@ts-ignore
+													method: "mint",
+													params: [activeAccount?.address, toWei("1")],
+												});
+												return tx;
+											}}
+										>
+											Mint
+										</TransactionButton>
+									)}
+								</div>
+							</div>
+						</div>
+					</>
+				)}
+			</div>
 			<video
 				src="/hero/video-sprites/bear3.webm"
 				autoPlay
 				loop
-				className="hidden md:block absolute bottom-[-70px] left-[-100px] scale-90"
+				className="hidden md:block absolute bottom-[-70px] right-[-100px] scale-90"
+				style={{ transform: "scaleX(-1)" }}
 			></video>
 		</div>
 	);
