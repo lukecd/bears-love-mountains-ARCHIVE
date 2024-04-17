@@ -151,7 +151,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	return (
 		// Create a flexbox div with a background image
-		<div className="flex flex-row justify-between w-full h-screen">
+		<div className="flex flex-row justify-center w-full h-screen">
 			<div className="flex flex-row mt-20 w-full ml-20">
 				{nftMetadata && (
 					<>
@@ -173,9 +173,9 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 								</h1>
 							</div>
 						</div>
-						<div className="flex flex-col rounded-2xl px-5 py-5 mt-10">
+						<div className="flex flex-col h-full rounded-2xl px-5 py-5 mt-10">
 							<DescriptionBox description={nftMetadata.description!} />
-							<div className="">
+							<div className="flex flex-col items-center mt-10">
 								<ConnectButton
 									client={client}
 									theme={darkTheme({
@@ -189,24 +189,23 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 										showThirdwebBranding: false,
 									}}
 								/>
-								<div className="ml-2">
-									{activeAccount && (
-										<TransactionButton
-											className="bg-red"
-											transaction={() => {
-												// Create a transaction object and return it
-												const tx = prepareContractCall({
-													contract,
-													//@ts-ignore
-													method: "mint",
-													params: [activeAccount?.address, toWei("1")],
-												});
-												return tx;
-											}}
-										>
-											Mint
-										</TransactionButton>
-									)}
+								<div className=" mt-10">
+									<TransactionButton
+										className="bg-red"
+										enabled={!activeAccount}
+										transaction={() => {
+											// Create a transaction object and return it
+											const tx = prepareContractCall({
+												contract,
+												//@ts-ignore
+												method: "mint",
+												params: [activeAccount?.address, toWei("1")],
+											});
+											return tx;
+										}}
+									>
+										{"   "}Mint{"   "}
+									</TransactionButton>
 								</div>
 							</div>
 						</div>
