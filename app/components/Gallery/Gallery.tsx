@@ -33,6 +33,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [allNftMetadata, setAllNftMetadata] = useState<NFTMetadata[]>([]);
 	const mainColors = ["#E24330", "#8C262E", "#90A9EE", "#98282B", "#E24330"];
 	const accentColors = ["#FEC901", "#FF7B02", "#F0F22F", "#FE91E7", "#FE91E7"];
+	const placeholderCount = 42; // There will be exactly 42 items
 
 	const contract = getContract({
 		client,
@@ -86,34 +87,50 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 
 	return (
 		<div className="flex flex-wrap justify-center w-full gap-4 pt-10 pb-30 bg-gradient-to-b from-pink-500 via-pink-300 to-yellow-200">
-			{!allNftMetadata && <h1 className="text-3xl h-full text-white">Loading...</h1>}
-			{allNftMetadata &&
-				allNftMetadata.map((nft: NFTMetadata, i) => (
-					<div
-						style={{ boxShadow: `0 4px 6px #FEC901` }}
-						className={`flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-white p-3 lg:pb-5 pb-1`}
-						key={i}
-					>
-						{" "}
-						<Link href={`/nft/${nft.id}`}>
-							<MediaRenderer
-								className={`h-auto hover:scale-105 transition-transform duration-300 cursor-pointer shadow-md rounded-lg `}
-								client={client}
-								src={nft.image}
-								width="100%"
-								height="100%"
-							/>
-						</Link>
-						<div className="w-full rounded-md pr-2 pb-1 lexend-mega-300">
-							<h1 className={`lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-black`}>
-								Bears Love Mountains #{nft.id}
-							</h1>
-							<h1 className={`lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-black`}>
-								Price {nft.price} {nft.token}
-							</h1>
+			{allNftMetadata.length === 0
+				? Array.from({ length: placeholderCount }, (_, i) => (
+						<div
+							key={i}
+							className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-white p-3 lg:pb-5 pb-1"
+						>
+							<div className="animate-pulse flex flex-col items-center justify-center h-full border border-gray-300 shadow rounded-md p-4 mx-auto w-full">
+								<img
+									src="/hero/mountains/planet-3.png"
+									className="rotate-forever h-20 w-20 self-center"
+									alt="Loading spinner"
+								/>
+								<div className="mt-2 space-y-2">
+									<div className="h-4 bg-gray-200 rounded w-3/4"></div>
+									<div className="h-4 bg-gray-200 rounded w-1/4"></div>
+								</div>
+							</div>
 						</div>
-					</div>
-				))}
+				  ))
+				: allNftMetadata.map((nft, i) => (
+						<div
+							key={i}
+							style={{ boxShadow: `0 4px 6px #FEC901` }}
+							className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-white p-3 lg:pb-5 pb-1"
+						>
+							<Link href={`/nft/${nft.id}`}>
+								<MediaRenderer
+									className="h-auto hover:scale-105 transition-transform duration-300 cursor-pointer shadow-md rounded-lg"
+									client={client}
+									src={nft.image}
+									width="100%"
+									height="100%"
+								/>
+							</Link>
+							<div className="w-full rounded-md pr-2 pb-1">
+								<h1 className="lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-black">
+									Bears Love Mountains #{nft.id}
+								</h1>
+								<h1 className="lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-black">
+									Price {nft.price}
+								</h1>
+							</div>
+						</div>
+				  ))}
 		</div>
 	);
 };
