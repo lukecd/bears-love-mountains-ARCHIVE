@@ -10,7 +10,7 @@ interface NFTsmallProps {
 	accentColor: string;
 }
 
-const NFTsmall: React.FC<NFTsmallProps> = ({ imageUrl, animationUrl, id, mainColor, accentColor }) => {
+const NFTsmall: React.FC<NFTsmallProps> = ({ imageUrl, animationUrl, id }) => {
 	const router = useRouter();
 	const showNFT = () => {
 		// Split the URL by '/' and get the last segment
@@ -21,10 +21,7 @@ const NFTsmall: React.FC<NFTsmallProps> = ({ imageUrl, animationUrl, id, mainCol
 	};
 
 	return (
-		<div
-			style={{ boxShadow: `0 4px 6px ${accentColor}` }}
-			className={`flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-white p-3 lg:pb-5 pb-1`}
-		>
+		<div className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center border-imageBorder shadow-accent shadow-2xl p-3 lg:pb-5 pb-1">
 			<img
 				src={imageUrl}
 				alt="NFT"
@@ -32,7 +29,7 @@ const NFTsmall: React.FC<NFTsmallProps> = ({ imageUrl, animationUrl, id, mainCol
 				onClick={showNFT}
 			/>
 			<div className="w-full rounded-md pr-2 pb-1 lexend-mega-300">
-				<h1 className={`lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-black`}>
+				<h1 className={`lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-headerText`}>
 					Bears Love Mountains #{id}
 				</h1>
 			</div>

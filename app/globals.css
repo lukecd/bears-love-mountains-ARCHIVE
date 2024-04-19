@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Lexend+Mega:wght@100..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Monoton&display=swap");
-
 @layer utilities {
 	.aspect-square {
 		padding-top: 100%;
@@ -25,32 +22,7 @@
 }
 
 body {
-	font-family: "Lexend Mega", sans-serif;
-	background-color: white;
-}
-
-.climate-crisis {
-	font-family: "Climate Crisis", sans-serif;
-	font-optical-sizing: auto;
-	font-weight: 400;
-	font-style: normal;
-	font-variation-settings: "YEAR" 1979;
-}
-
-.lexend-mega-900 {
-	font-family: "Lexend Mega", sans-serif;
-	font-weight: 900;
-}
-
-.lexend-mega-300 {
-	font-family: "Lexend Mega", sans-serif;
-	font-weight: 300;
-}
-
-.monoton-regular {
-	font-family: "Monoton", sans-serif;
-	font-weight: 400;
-	font-style: normal;
+	background-color: #f6f6f6;
 }
 
 :root {

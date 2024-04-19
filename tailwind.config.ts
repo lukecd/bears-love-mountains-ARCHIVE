@@ -9,8 +9,17 @@ const config: Config = {
 	theme: {
 		extend: {
 			colors: {
-				main: "#FF88E6",
-				accent: "#22A093",
+				bg: "#F6F6F6",
+				accent: "#54D5F5",
+				text: "#363638",
+				headerBg: "#54D5F5",
+				headerText: "#363638",
+				buttonBg: "#408696",
+				buttonAccent: "#54D5F5",
+				buttonText: "#FFFFFF",
+				footerBg: "#363638",
+				footerText: "#54D5F5",
+				nftBorder: "#363638",
 			},
 			boxShadow: {
 				heavy: "0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.5)",

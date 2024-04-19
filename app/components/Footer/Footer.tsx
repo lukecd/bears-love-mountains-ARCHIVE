@@ -2,15 +2,12 @@ import React from "react";
 
 const Footer: React.FC = () => {
 	return (
-		<div
-			className="bg-stone-800 text-white px-4 py-2 w-full mt-15"
-			style={{ boxShadow: "0 -4px 6px -1px rgba(255, 20, 147, 0.8), 0 -2px 4px -1px rgba(255, 20, 147, 0.6)" }}
-		>
-			<div className="container mx-auto flex flex-col lg:flex-row justify-between items-center">
-				<div className="text-center lg:text-left lg:w-2/3">
-					<p className="text-lg lg:text-3xl">In the mountain mist,</p>
-					<p className="text-lg lg:text-3xl">Bear inhales nature's calm breeze,</p>
-					<p className="text-lg lg:text-3xl">Peace in every puff.</p>
+		<div className="bg-footerBg text-footerText w-full mt-15 z-20">
+			<div className="container flex flex-col lg:flex-row  items-center">
+				<div className="text-center lg:text-left lg:w-2/3 px-10">
+					<p className="text-lg lg:text-2xl">In the mountain mist,</p>
+					<p className="text-lg lg:text-2xl">Bear inhales nature{"'"}s calm breeze,</p>
+					<p className="text-lg lg:text-2xl">Peace in every puff.</p>
 				</div>
 				<div className="w-full lg:w-1/3 mt-4 lg:mt-0 flex flex-col items-center lg:items-start">
 					<a href="https://twitter.com/spaceagente" className="flex items-center mb-2">

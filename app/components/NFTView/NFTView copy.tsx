@@ -34,45 +34,6 @@ const wallets = [
 	}),
 ];
 
-type ResponsiveProps = {
-	client: any;
-	url: string;
-};
-
-const ResponsiveMediaRenderer: React.FC<ResponsiveProps> = ({ client, url }) => {
-	const [size, setSize] = useState<"500px" | "100%">("500px");
-
-	useEffect(() => {
-		const handleResize = () => {
-			const currentWidth = window.innerWidth;
-			console.log({ window });
-			console.log("currentWidth", currentWidth);
-			if (currentWidth >= 500) {
-				setSize("500px");
-			} else if (currentWidth < 500) {
-				setSize("100%");
-			}
-		};
-
-		window.addEventListener("resize", handleResize);
-		handleResize(); // Initial check on component mount
-
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, []);
-
-	return (
-		<MediaRenderer
-			className="cursor-pointer mt-10 border-8 border-nftBorder shadow-xl shadow-accent"
-			client={client}
-			src={url}
-			width={size}
-			height={size}
-		/>
-	);
-};
-
 type NFTViewProps = {
 	id: string; // The id of the NFT to display
 };
@@ -95,6 +56,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	});
 	const { mutate: sendTransaction, isPending } = useSendTransaction();
 	const [nftMetadata, setNftMetadata] = useState<NFTMetadata | null>(null);
+
 	const [mintSuccess, setMintSuccess] = useState(false);
 
 	useEffect(() => {
@@ -138,46 +100,43 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	return (
 		// Create a flexbox div with a background image
 		<div className="flex flex-row w-full h-full bg-bg">
-			<div className="flex flex-row md:justify-center md:items-center w-full md:gap-x-4 ">
+			<div className="flex flex-row justify-center items-center w-full gap-x-4">
 				{nftMetadata && (
 					<>
-						<div className="grid grid-cols-1 md:grid-cols-3 md:gap-4 mt-20 md:mt-0">
-							<div className="md:col-span-2 md:p-4">
-								<ResponsiveMediaRenderer client={client} url={nftMetadata.animation_url!} />
-								{/* <MediaRenderer
-									className="cursor-pointer mt-10 border-8 border-nftBorder shadow-xl shadow-accent"
-									client={client}
-									src={nftMetadata.animation_url}
-									width="500px"
-									height="500px"
-								/> */}
-								<div className="rounded-md pb-1 mt-5">
-									<h1 className="mt-3 text-2xl text-black text-right">Bears Love Mountains #{nftMetadata.id}</h1>
-									<h1 className="text-xl text-black text-right">
-										Price {nftMetadata.price} {nftMetadata.token}
-									</h1>
-								</div>
+						<div className="w-2/3 flex flex-col">
+							<MediaRenderer
+								className="cursor-pointer mt-10 border-8 border-nftBorder shadow-2xl shadow-accent"
+								client={client}
+								src={nftMetadata.animation_url}
+								width="500px"
+								height="500px"
+							/>
+							<div className="rounded-md pb-1 ">
+								<h1 className="mt-3 text-2xl text-black">Bears Love Mountains #{nftMetadata.id}</h1>
+								<h1 className="text-xl text-black">
+									Price {nftMetadata.price} {nftMetadata.token}
+								</h1>
 							</div>
-							<div className="md:col-span-1 md:self-end p-4 md:mb-20 ">
-								<button
-									className="h-12 border-2 p-2.5 rounded-full font-bold mt-4 w-full bg-buttonBg hover:bg-buttonAccent ease-in-out border-buttonAccent shadow-2xl shadow-buttonAccent text-buttonText"
-									disabled={activeAccount ? false : true}
-									onClick={doMint}
-								>
-									<span className="text-buttonText">{isPending ? "Minting..." : "Buy Now"}</span>
-								</button>
-							</div>
+						</div>
+						<div className="w-1/3">
+							<button
+								className="h-12 border-2 p-2.5 rounded-full font-bold mt-4 w-full bg-buttonBg hover:bg-buttonAccent ease-in-out border-buttonAccent shadow-2xl shadow-buttonAccent text-buttonText"
+								disabled={activeAccount ? false : true}
+								onClick={doMint}
+							>
+								<span className="text-buttonText">{isPending ? "Minting..." : "Buy Now"}</span>
+							</button>
 						</div>
 					</>
 				)}
 			</div>
 
 			<video
-				src="/hero/video-sprites/bear1.webm"
+				src="/hero/video-sprites/bear3.webm"
 				autoPlay
 				loop
-				className="hidden lg:block absolute bottom-[-200px] right-[-100px] scale-90"
-				style={{ transform: "scale(0.7)" }}
+				className="hidden md:block absolute bottom-[-130px] right-[-100px] scale-90"
+				style={{ transform: "scaleX(-1)" }}
 			></video>
 		</div>
 	);

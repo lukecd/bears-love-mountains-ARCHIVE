@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Lilita_One } from "next/font/google";
+
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+// const pageFont = Inter({ subsets: ["latin"] });
+const pageFont = Lilita_One({ subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
 	title: "Bears Love Mountains",
@@ -16,7 +19,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={inter.className}>{children}</body>
+			<body className={pageFont.className}>{children}</body>
 		</html>
 	);
 }

@@ -31,8 +31,6 @@ interface NFTMetadata {
 const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [components, setComponents] = useState<React.ReactNode[]>([]);
 	const [allNftMetadata, setAllNftMetadata] = useState<NFTMetadata[]>([]);
-	const mainColors = ["#E24330", "#8C262E", "#90A9EE", "#98282B", "#E24330"];
-	const accentColors = ["#FEC901", "#FF7B02", "#F0F22F", "#FE91E7", "#FE91E7"];
 	const placeholderCount = 39; // There will be exactly 42 items
 
 	const contract = getContract({
@@ -95,7 +93,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 							key={i}
 							className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center p-3 lg:pb-5 pb-1"
 						>
-							<div className="animate-pulse flex flex-col items-center justify-center h-full border border-gray-300 shadow rounded-md p-4 mx-auto w-full">
+							<div className="animate-pulse flex flex-col items-center justify-center h-full border border-gray-300 shadow shadow-accent rounded-md p-4 mx-auto w-full">
 								<img
 									src="/hero/mountains/planet-3.png"
 									className="rotate-forever h-20 w-20 self-center"
@@ -111,8 +109,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 				: allNftMetadata.map((nft, i) => (
 						<div
 							key={i}
-							style={{ boxShadow: `0 4px 6px #FEC901` }}
-							className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-white p-3 lg:pb-5 pb-1"
+							className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-bg p-3 lg:pb-5 pb-1 shadow-accent shadow-2xl"
 						>
 							<Link href={`/nft/${nft.id}`}>
 								<MediaRenderer
@@ -124,10 +121,10 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 								/>
 							</Link>
 							<div className="w-full rounded-md pr-2 pb-1">
-								<h1 className="lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-black">
+								<h1 className="lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-text">
 									Bears Love Mountains #{nft.id}
 								</h1>
-								<h1 className="lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-black">
+								<h1 className="lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-text">
 									Price {nft.price}
 								</h1>
 							</div>
