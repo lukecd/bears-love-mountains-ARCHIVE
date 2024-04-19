@@ -3,7 +3,7 @@ import React from "react";
 const Footer: React.FC = () => {
 	return (
 		<div
-			className="bg-purple-900 text-white px-4 py-2 w-full"
+			className="bg-stone-800 text-white px-4 py-2 w-full mt-15"
 			style={{ boxShadow: "0 -4px 6px -1px rgba(255, 20, 147, 0.8), 0 -2px 4px -1px rgba(255, 20, 147, 0.6)" }}
 		>
 			<div className="container mx-auto flex flex-col lg:flex-row justify-between items-center">

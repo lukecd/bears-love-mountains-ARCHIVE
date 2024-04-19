@@ -88,7 +88,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	}, [nfts]);
 
 	return (
-		<div className="flex flex-wrap justify-center w-full gap-4 pt-10 pb-30 bg-gradient-to-b">
+		<div className="flex flex-wrap justify-center w-full gap-4 pt-10 pb-30 mb-30">
 			{allNftMetadata.length === 0
 				? Array.from({ length: placeholderCount }, (_, i) => (
 						<div

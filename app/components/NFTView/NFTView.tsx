@@ -223,7 +223,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 				src="/hero/video-sprites/bear3.webm"
 				autoPlay
 				loop
-				className="hidden md:block absolute bottom-[-70px] right-[-100px] scale-90"
+				className="hidden md:block absolute bottom-[-130px] right-[-100px] scale-90"
 				style={{ transform: "scaleX(-1)" }}
 			></video>
 		</div>
