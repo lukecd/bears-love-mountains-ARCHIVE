@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ThirdwebProvider } from "thirdweb/react";
 import { sepolia } from "thirdweb/chains";
+import Footer from "@/app/components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +28,9 @@ const Page: React.FC<PageProps> = ({ params }) => {
 		<main className="w-full h-screen">
 			<ThirdwebProvider>
 				<QueryClientProvider client={queryClient}>
-					<Navbar /> <NFTView id={id} />{" "}
+					<Navbar />
+					<NFTView id={id} />
+					<Footer />
 				</QueryClientProvider>
 			</ThirdwebProvider>
 		</main>
