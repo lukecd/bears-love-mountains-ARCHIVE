@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import { sepolia } from "thirdweb/chains";
 import { createThirdwebClient, defineChain } from "thirdweb";
 import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
+import { totalSupply, getNFTs } from "thirdweb/extensions/erc721";
 import { totalListings, getAllListings } from "thirdweb/extensions/marketplace";
 import Link from "next/link";
 const client = createThirdwebClient({
@@ -33,20 +34,32 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [allNftMetadata, setAllNftMetadata] = useState<NFTMetadata[]>([]);
 	const mainColors = ["#E24330", "#8C262E", "#90A9EE", "#98282B", "#E24330"];
 	const accentColors = ["#FEC901", "#FF7B02", "#F0F22F", "#FE91E7", "#FE91E7"];
-	const placeholderCount = 39; // There will be exactly 42 items
+	const placeholderCount = 42; // There will be exactly 42 items
 
-	const contract = getContract({
+	const nftContract = getContract({
+		client,
+		address: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
+		chain: sepolia,
+	});
+
+	const marketplaceContract = getContract({
 		client,
 		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
 		chain: sepolia,
 	});
+	const { data: nftCount } = useReadContract(totalSupply, { contract: nftContract });
+	const { data: marketplaceNftCount } = useReadContract(totalListings, { contract: marketplaceContract });
 
-	const { data: nftCount } = useReadContract(totalListings, { contract });
-
-	const { data: nfts } = useReadContract(getAllListings, {
-		contract,
+	const { data: marketplaceNfts } = useReadContract(getAllListings, {
+		contract: marketplaceContract,
 		start: 0,
-		count: nftCount,
+		count: marketplaceNftCount,
+	});
+
+	const { data: contractNfts } = useReadContract(getNFTs, {
+		contract: nftContract,
+		start: 0,
+		count: 42,
 	});
 
 	interface NFTMetadata {
@@ -57,43 +70,59 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 		name?: string;
 		animation_url?: string;
 		description?: string;
+		forSale: boolean;
+		owner?: string;
 	}
 
 	useEffect(() => {
-		if (nfts) {
-			console.log("nfts", nfts);
+		if (marketplaceNfts && contractNfts) {
+			console.log({ marketplaceNfts });
 			const metadataBuilder: NFTMetadata[] = [];
 
-			// const activeNfts = marketplaceNfts.filter((nft) => nft.status === "ACTIVE");
+			// Filter nfts to only contain nft.status === ACTIVE
+			const activeNfts = marketplaceNfts.filter((nft) => nft.status === "ACTIVE");
 
-			for (let i = 0; i < nfts.length; i++) {
-				if (nfts[i].status === "ACTIVE") {
-					const idNumber = Number(nfts[i].asset.id.toString());
-					const price = nfts[i].currencyValuePerToken.displayValue;
-					const metadata: NFTMetadata = {
-						...nfts[i].asset.metadata,
-						id: idNumber,
-						price: price,
-						token: nfts[i].currencyValuePerToken.symbol,
-					};
-					metadataBuilder.push(metadata);
-				}
-				// Sort metadataBuilder by id
-				metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
+			// Sort activeNfts by id
+			activeNfts.sort((a, b) => (a.asset.id > b.asset.id ? 1 : -1));
 
-				setAllNftMetadata(metadataBuilder);
-				console.log({ metadataBuilder });
+			console.log({ contractNfts });
+
+			// Sort contractNfts by id
+			contractNfts.sort((a, b) => (a.id > b.id ? 1 : -1));
+
+			for (let i = 0; i < contractNfts.length; i++) {
+				const idNumber = Number(contractNfts[i].id.toString());
+				// const price = contractNfts[i].currencyValuePerToken.displayValue;
+				// const priceToken = contractNfts[i].currencyValuePerToken.symbol,
+
+				// if idNumber is in markeplaceNfts, set forSale to true, else set to false
+				const forSale = marketplaceNfts.some((nft) => nft.asset.id === contractNfts[i].id);
+				console.log({ idNumber, forSale });
+
+				const metadata: NFTMetadata = {
+					...contractNfts[i].metadata,
+					id: idNumber,
+					price: "",
+					token: "",
+					forSale: forSale,
+					// owner: nfts[i].seller,
+				};
+				metadataBuilder.push(metadata);
 			}
+
+			setAllNftMetadata(metadataBuilder);
+
+			console.log("active NFT count", activeNfts.length);
 		}
-	}, [nfts]);
+	}, [marketplaceNfts]);
 
 	return (
-		<div className="flex flex-wrap justify-center w-full gap-4 pt-10 pb-30 bg-gradient-to-b">
+		<div className="flex flex-wrap justify-center w-full gap-4 pt-10 pb-30 bg-gradient-to-b from-pink-500 via-pink-300 to-yellow-200">
 			{allNftMetadata.length === 0
 				? Array.from({ length: placeholderCount }, (_, i) => (
 						<div
 							key={i}
-							className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center p-3 lg:pb-5 pb-1"
+							className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-white p-3 lg:pb-5 pb-1"
 						>
 							<div className="animate-pulse flex flex-col items-center justify-center h-full border border-gray-300 shadow rounded-md p-4 mx-auto w-full">
 								<img

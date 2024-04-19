@@ -24,7 +24,7 @@ const Page: React.FC<PageProps> = ({ params }) => {
 	const router = useRouter();
 	console.log(id);
 	return (
-		<main className="bg-gradient-to-b w-full h-screen from-pink-500 via-pink-300 to-yellow-200">
+		<main className="w-full h-screen">
 			<ThirdwebProvider>
 				<QueryClientProvider client={queryClient}>
 					<Navbar /> <NFTView id={id} />{" "}

@@ -180,7 +180,7 @@ const Hero3: React.FC<Hero3Props> = ({ className, navbarMode }) => {
 			</div>
 			{isSticky && (
 				<div
-					className={`fixed top-0 z-50 w-full px-4 py-2 bg-[url('/hero/mountains/01-background.png')] bg-cover `}
+					className="fixed top-0 z-50 w-full px-4 py-2 bg-purple-900"
 					style={{
 						height: "90px",
 						boxShadow: "0 4px 6px -1px rgba(255, 20, 147, 0.8), 0 2px 4px -1px rgba(255, 20, 147, 0.6)",

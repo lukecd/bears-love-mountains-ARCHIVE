@@ -13,7 +13,7 @@ const queryClient = new QueryClient();
 
 export default function Home() {
 	return (
-		<main className="flex flex-col items-center justify-center bg-white min-h-screen">
+		<main className="flex flex-col items-center justify-center min-h-screen">
 			<ThirdwebProvider>
 				<QueryClientProvider client={queryClient}>
 					<Hero3 navbarMode={false} />

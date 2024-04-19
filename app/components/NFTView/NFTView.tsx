@@ -153,6 +153,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		const receipt = await sendTransaction(tx);
 		console.log("receipt", receipt);
 	};
+
 	const { connect, isConnecting, error } = useConnect();
 
 	const activeAccount = useActiveAccount();

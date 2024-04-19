@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 const Page = () => {
 	return (
-		<div className=" bg-white">
+		<div className="">
 			<div className="flex flex-col min-h-screen mt-15 px-10 text-black">
 				<br />
 				<br />
