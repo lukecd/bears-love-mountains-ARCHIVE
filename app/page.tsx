@@ -2,7 +2,6 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
 
-import Quote from "./components/Quote";
 import Gallery from "./components/Gallery";
 import Hero3 from "./components/Hero3";
 import { QueryClient, QueryClientProvider } from "react-query";
