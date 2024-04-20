@@ -4,15 +4,19 @@ import React, { useState, useEffect } from "react";
 import NFTsmall from "../NFTsmall";
 import Info from "../Info";
 import { getContract } from "thirdweb";
-import { MediaRenderer, useReadContract } from "thirdweb/react";
+import { MediaRenderer, useReadContract, useActiveWalletChain } from "thirdweb/react";
 import { useRouter } from "next/router";
 import { sepolia } from "thirdweb/chains";
 import { createThirdwebClient, defineChain } from "thirdweb";
 import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
 import { totalListings, getAllListings } from "thirdweb/extensions/marketplace";
 import { getOwnedNFTs } from "thirdweb/extensions/erc721";
-import { useActiveAccount, useActiveWallet } from "thirdweb/react";
+import { useActiveAccount } from "thirdweb/react";
 import HoverMediaRenderer from "../HoverMediaRenderer/HoverMediaRenderer";
+import { useConnect } from "thirdweb/react";
+import { createWallet, walletConnect, inAppWallet, injectedProvider } from "thirdweb/wallets";
+import { useSwitchActiveWalletChain } from "thirdweb/react";
+
 import Link from "next/link";
 const client = createThirdwebClient({
 	clientId: THIRD_WEB_CLIENT_ID,
@@ -33,11 +37,16 @@ interface NFTMetadata {
 
 const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const activeAccount = useActiveAccount();
-	const activeWallet = useActiveWallet();
+	const { connect, isConnecting, error } = useConnect();
+	const switchChain = useSwitchActiveWalletChain();
+	const activeChain = useActiveWalletChain();
 
 	const [components, setComponents] = useState<React.ReactNode[]>([]);
 	const [allNftMetadata, setAllNftMetadata] = useState<NFTMetadata[]>([]);
-	const placeholderCount = 42; // There will be exactly 42 items
+	const [placeholderCount, setPlaceHolderCount] = useState<number>(42); // There will be exactly 42 items
+	const [txActive, setTxActive] = useState<boolean>(false);
+	const [overlayOpacity, setOverlayOpacity] = useState(0);
+	const [showOverlay, setShowOverlay] = useState(false);
 
 	const nftContract = getContract({
 		client,
@@ -70,17 +79,68 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 		forSale: boolean;
 	}
 
+	const doConnect = async () => {
+		setTxActive(true);
+		await connect(async () => {
+			const metamask = createWallet("io.metamask"); // pass the wallet id
+
+			// if user has metamask installed, connect to it
+			if (injectedProvider("io.metamask")) {
+				await metamask.connect({ client });
+			}
+
+			// open wallet connect modal so user can scan the QR code and connect
+			else {
+				await metamask.connect({
+					client,
+					walletConnect: { showQrModal: true },
+				});
+			}
+			console.log("metamask", metamask);
+
+			// return the wallet
+			return metamask;
+		});
+		// Switch to the correct chain
+		if (activeChain?.name !== "sepolia") {
+			await switchChain(sepolia);
+		}
+		setTxActive(false);
+	};
+
 	const loadOwnedNFTs = async () => {
 		console.log("Loading owned NFTs");
-		console.log({ activeAccount, activeWallet });
-		// if (activeAccount) {
-		const ownedNFTs = await getOwnedNFTs({
-			contract: nftContract,
-			owner: "0xe44d8e0126EE44014F32989514aF94C77Ab6C4d8",
-			// owner: activeAccount.address,
-		});
-		console.log({ ownedNFTs });
-		// }
+		await doConnect();
+
+		console.log({ activeAccount });
+		if (activeAccount) {
+			const ownedNFTs = await getOwnedNFTs({
+				contract: nftContract,
+				owner: activeAccount.address,
+			});
+			console.log({ ownedNFTs });
+
+			const metadataBuilder: NFTMetadata[] = [];
+
+			for (let i = 0; i < ownedNFTs.length; i++) {
+				const idNumber = Number(ownedNFTs[i].id.toString());
+				const price = ownedNFTs[i].metadata.price || "0";
+				const metadata: NFTMetadata = {
+					...ownedNFTs[i].metadata,
+					id: idNumber,
+					price: "NA",
+					token: "NA",
+					forSale: false,
+				};
+				metadataBuilder.push(metadata);
+			}
+			console.log({ metadataBuilder });
+			metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
+
+			setAllNftMetadata(metadataBuilder);
+
+			setPlaceHolderCount(ownedNFTs.length);
+		}
 	};
 
 	useEffect(() => {
@@ -88,15 +148,13 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	}, []);
 
 	useEffect(() => {
-		if (nfts) {
+		if (nfts && showAll) {
 			console.log("nfts", nfts);
 			const metadataBuilder: NFTMetadata[] = [];
 
 			const activeNfts = nfts.filter((nft) => nft.status !== "CANCELLED");
-			activeNfts.sort((a, b) => (a.id > b.id ? 1 : -1));
 
 			for (let i = 0; i < activeNfts.length; i++) {
-				// if (nfts[i].status === "ACTIVE") {
 				const idNumber = Number(activeNfts[i].asset.id.toString());
 				const price = activeNfts[i].currencyValuePerToken.displayValue;
 				const metadata: NFTMetadata = {
@@ -107,11 +165,10 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 					forSale: activeNfts[i].status === "ACTIVE",
 				};
 				metadataBuilder.push(metadata);
-				// }
-				// // Sort metadataBuilder by id
-				// metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
 			}
 			console.log({ metadataBuilder });
+			metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
+
 			setAllNftMetadata(metadataBuilder);
 		}
 	}, [nfts]);

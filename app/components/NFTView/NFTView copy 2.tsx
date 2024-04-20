@@ -86,7 +86,6 @@ interface NFTMetadata {
 	name?: string;
 	animation_url?: string;
 	description?: string;
-	forSale: boolean;
 }
 
 const NFTView: React.FC<NFTViewProps> = ({ id }) => {
@@ -105,18 +104,6 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	const wallet = useActiveWallet();
 	const activeChain = useActiveWalletChain();
 	const [txActive, setTxActive] = useState<boolean>(false);
-	const [overlayOpacity, setOverlayOpacity] = useState(0);
-	const [showOverlay, setShowOverlay] = useState(false);
-
-	useEffect(() => {
-		if (txActive) {
-			setShowOverlay(true);
-			setTimeout(() => setOverlayOpacity(1), 10); // trigger fade-in
-		} else {
-			setOverlayOpacity(0); // trigger fade-out
-			setTimeout(() => setShowOverlay(false), 300); // delay to match transition duration
-		}
-	}, [txActive]);
 
 	useEffect(() => {
 		const loadNFTdata = async () => {
@@ -131,7 +118,6 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 				id: idNumber,
 				price: price,
 				token: listing.currencyValuePerToken.symbol,
-				forSale: listing.status === "ACTIVE",
 			};
 			setNftMetadata(metadata);
 		};
@@ -150,8 +136,6 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		const receipt = await sendTransaction(tx);
 		console.log("receipt", receipt);
 	};
-
-	const setupSell = async () => {};
 
 	const doConnect = async () => {
 		setTxActive(true);
@@ -195,40 +179,27 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 						<div className="grid grid-cols-1 md:grid-cols-3 md:gap-4 mt-20 md:mt-0">
 							<div className="md:col-span-2 md:p-4">
 								<ResponsiveMediaRenderer client={client} url={nftMetadata.animation_url!} />
-								{showOverlay && (
-									<div
-										className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-10 transition-opacity duration-300 ease-in-out"
-										style={{ opacity: overlayOpacity }}
-									>
-										<img
-											src="/hero/mountains/planet-1.png"
-											alt="Stationary Planet"
-											className="rotate-forever"
-											style={{
-												filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
-												zIndex: 20,
-												position: "absolute",
-											}}
-										/>
-									</div>
-								)}
-
+								{/* <MediaRenderer
+									className="cursor-pointer mt-10 border-8 border-nftBorder shadow-xl shadow-accent"
+									client={client}
+									src={nftMetadata.animation_url}
+									width="500px"
+									height="500px"
+								/> */}
 								<div className="rounded-md pb-1 mt-5">
 									<h1 className="mt-3 text-2xl text-black text-right">Bears Love Mountains #{nftMetadata.id}</h1>
 									<h1 className="text-xl text-black text-right">
-										{!nftMetadata.forSale ? "SOLD" : "Price " + nftMetadata.price + " " + nftMetadata.token}
+										Price {nftMetadata.price} {nftMetadata.token}
 									</h1>
 								</div>
 							</div>
-							<div className="md:col-span-1 md:self-end p-4 mb-20 mt-3  md:mt-0 ">
+							<div className="md:col-span-1 md:self-end p-4 md:mb-20 ">
 								<button
-									className="h-12 border-2 p-2.5 rounded-full font-bold mt-4 w-full bg-buttonBg hover:bg-buttonAccent ease-in-out border-buttonAccent shadow-2xl shadow-buttonAccent text-buttonText hover:duration-300 ease-in-out"
+									className="h-12 border-2 p-2.5 rounded-full font-bold mt-4 w-full bg-buttonBg hover:bg-buttonAccent ease-in-out border-buttonAccent shadow-2xl shadow-buttonAccent text-buttonText"
 									// disabled={isPending ? false : true}
-									onClick={!nftMetadata.forSale ? setupSell : !activeAccount ? doConnect : doMint}
+									onClick={!activeAccount ? doConnect : doMint}
 								>
-									{!nftMetadata.forSale ? (
-										<span className="text-buttonText text-xl">List for sale</span>
-									) : !activeAccount ? (
+									{!activeAccount ? (
 										<span className="text-buttonText text-xl">Connect Wallet</span>
 									) : isPending ? (
 										<span className="text-buttonText text-2xl">Minting...</span>
