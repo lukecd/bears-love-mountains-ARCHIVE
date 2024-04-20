@@ -15,6 +15,7 @@ import { useActiveAccount } from "thirdweb/react";
 import { prepareContractCall, getContract, toWei } from "thirdweb";
 import { useSendTransaction } from "thirdweb/react";
 import { useWaitForReceipt } from "thirdweb/react";
+import { useSwitchActiveWalletChain } from "thirdweb/react";
 
 const client = createThirdwebClient({
 	clientId: THIRD_WEB_CLIENT_ID,
@@ -23,16 +24,16 @@ const client = createThirdwebClient({
 import { ThirdwebProvider, ConnectButton, TransactionButton, darkTheme } from "thirdweb/react";
 import { createWallet, walletConnect, inAppWallet } from "thirdweb/wallets";
 
-const wallets = [
-	createWallet("io.metamask"),
-	createWallet("com.coinbase.wallet"),
-	walletConnect(),
-	inAppWallet({
-		auth: {
-			options: ["email", "google", "apple", "facebook"],
-		},
-	}),
-];
+// const wallets = [
+// 	createWallet("io.metamask"),
+// 	createWallet("com.coinbase.wallet"),
+// 	walletConnect(),
+// 	inAppWallet({
+// 		auth: {
+// 			options: ["email", "google", "apple", "facebook"],
+// 		},
+// 	}),
+// ];
 
 type ResponsiveProps = {
 	client: any;
@@ -40,7 +41,7 @@ type ResponsiveProps = {
 };
 
 const ResponsiveMediaRenderer: React.FC<ResponsiveProps> = ({ client, url }) => {
-	const [size, setSize] = useState<"500px" | "100%">("500px");
+	const [size, setSize] = useState("500px");
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -50,7 +51,7 @@ const ResponsiveMediaRenderer: React.FC<ResponsiveProps> = ({ client, url }) => 
 			if (currentWidth >= 500) {
 				setSize("500px");
 			} else if (currentWidth < 500) {
-				setSize("100%");
+				setSize(`${currentWidth}px`);
 			}
 		};
 
@@ -93,9 +94,14 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
 		chain: sepolia,
 	});
+
 	const { mutate: sendTransaction, isPending } = useSendTransaction();
 	const [nftMetadata, setNftMetadata] = useState<NFTMetadata | null>(null);
 	const [mintSuccess, setMintSuccess] = useState(false);
+	const switchChain = useSwitchActiveWalletChain();
+	const { connect, isConnecting, error } = useConnect();
+	const activeAccount = useActiveAccount();
+	const wallet = useActiveWallet();
 
 	useEffect(() => {
 		const loadNFTdata = async () => {
@@ -129,10 +135,21 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		console.log("receipt", receipt);
 	};
 
-	const { connect, isConnecting, error } = useConnect();
+	const doConnect = async () => {
+		// console.log("Connecting Wallet");
+		// // Connect to the wallet
+		// const connectedWallet = await connect(async () => {
+		// 	// instantiate wallet
+		// 	const wallet = metamaskWallet();
+		// 	// connect wallet
+		// 	await wallet.connect();
+		// 	// return the wallet
+		// 	return wallet;
+		// });
+	};
 
-	const activeAccount = useActiveAccount();
-	const wallet = useActiveWallet();
+	console.log("wallet", wallet);
+
 	console.log("activeAccount", activeAccount);
 
 	return (
@@ -161,10 +178,18 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 							<div className="md:col-span-1 md:self-end p-4 md:mb-20 ">
 								<button
 									className="h-12 border-2 p-2.5 rounded-full font-bold mt-4 w-full bg-buttonBg hover:bg-buttonAccent ease-in-out border-buttonAccent shadow-2xl shadow-buttonAccent text-buttonText"
-									disabled={activeAccount ? false : true}
-									onClick={doMint}
+									// disabled={isPending ? false : true}
+									onClick={!activeAccount ? doConnect : doMint}
 								>
-									<span className="text-buttonText">{isPending ? "Minting..." : "Buy Now"}</span>
+									{!activeAccount ? (
+										<span className="text-buttonText text-xl">Connect Wallet</span>
+									) : isPending ? (
+										<span className="text-buttonText text-2xl">Minting...</span>
+									) : isConnecting ? (
+										<span className="text-buttonText text-2xl">Connecting...</span>
+									) : (
+										<span className="text-buttonText text-2xl">Buy Now</span>
+									)}
 								</button>
 							</div>
 						</div>
@@ -176,7 +201,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 				src="/hero/video-sprites/bear1.webm"
 				autoPlay
 				loop
-				className="hidden lg:block absolute bottom-[-200px] right-[-100px] scale-90"
+				className="hidden lg:block absolute bottom-[-220px] right-[-100px] scale-90"
 				style={{ transform: "scale(0.7)" }}
 			></video>
 		</div>

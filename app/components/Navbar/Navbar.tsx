@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
 const Navbar = () => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,15 +26,15 @@ const Navbar = () => {
 						</button>
 						{isMenuOpen && (
 							<div className="absolute right-0 mt-2 py-2 w-48 bg-bg rounded-lg shadow-xl shadow-accent">
-								<a href="/" className="block px-4 py-2 text-text text-base">
+								<Link href="/" className="block px-4 py-2 text-text text-base">
 									Home
-								</a>
-								<a href="/about" className="block px-4 py-2 text-text text-base">
+								</Link>
+								<Link href="/about" className="block px-4 py-2 text-text text-base">
 									About
-								</a>
-								<a href="/yourNFTs" className="block px-4 py-2 text-text text-base">
+								</Link>
+								<Link href="/yourNFTs" className="block px-4 py-2 text-text text-base">
 									Your NFTs
-								</a>
+								</Link>
 							</div>
 						)}
 					</div>
