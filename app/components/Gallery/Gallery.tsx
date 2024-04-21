@@ -36,7 +36,6 @@ interface NFTMetadata {
 }
 
 const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
-	const activeAccount = useActiveAccount();
 	const { connect, isConnecting, error } = useConnect();
 	const switchChain = useSwitchActiveWalletChain();
 	const activeChain = useActiveWalletChain();
@@ -47,6 +46,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [txActive, setTxActive] = useState<boolean>(false);
 	const [overlayOpacity, setOverlayOpacity] = useState(0);
 	const [showOverlay, setShowOverlay] = useState(false);
+	const [activeAdress, setActiveAdress] = useState<string>("");
 
 	const nftContract = getContract({
 		client,
@@ -81,6 +81,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 
 	const doConnect = async () => {
 		setTxActive(true);
+		console.log("Connecting wallet");
 		await connect(async () => {
 			const metamask = createWallet("io.metamask"); // pass the wallet id
 
@@ -96,8 +97,10 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 					walletConnect: { showQrModal: true },
 				});
 			}
-			console.log("metamask", metamask);
+			console.log({ client });
 
+			console.log("metamask", metamask.getAccount());
+			setActiveAdress(metamask.getAccount()?.address!);
 			// return the wallet
 			return metamask;
 		});
@@ -108,43 +111,44 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 		setTxActive(false);
 	};
 
-	const loadOwnedNFTs = async () => {
-		console.log("Loading owned NFTs");
-		await doConnect();
-
-		console.log({ activeAccount });
-		if (activeAccount) {
-			const ownedNFTs = await getOwnedNFTs({
-				contract: nftContract,
-				owner: activeAccount.address,
-			});
-			console.log({ ownedNFTs });
-
-			const metadataBuilder: NFTMetadata[] = [];
-
-			for (let i = 0; i < ownedNFTs.length; i++) {
-				const idNumber = Number(ownedNFTs[i].id.toString());
-				const price = ownedNFTs[i].metadata.price || "0";
-				const metadata: NFTMetadata = {
-					...ownedNFTs[i].metadata,
-					id: idNumber,
-					price: "NA",
-					token: "NA",
-					forSale: false,
-				};
-				metadataBuilder.push(metadata);
-			}
-			console.log({ metadataBuilder });
-			metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
-
-			setAllNftMetadata(metadataBuilder);
-
-			setPlaceHolderCount(ownedNFTs.length);
-		}
-	};
-
+	// Called when activeAddress is set
 	useEffect(() => {
-		if (!showAll) loadOwnedNFTs();
+		// ETH addresses are 42 characters long (with the 0x)
+		if (activeAdress.length === 42) {
+			const doLoad = async () => {
+				const ownedNFTs = await getOwnedNFTs({
+					contract: nftContract,
+					owner: activeAdress!,
+				});
+				console.log({ ownedNFTs });
+				setPlaceHolderCount(ownedNFTs.length);
+
+				const metadataBuilder: NFTMetadata[] = [];
+
+				for (let i = 0; i < ownedNFTs.length; i++) {
+					const idNumber = Number(ownedNFTs[i].id.toString());
+					const price = ownedNFTs[i].metadata.price || "0";
+					const metadata: NFTMetadata = {
+						...ownedNFTs[i].metadata,
+						id: idNumber,
+						price: "NA",
+						token: "NA",
+						forSale: false,
+					};
+					metadataBuilder.push(metadata);
+				}
+				console.log({ metadataBuilder });
+				metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
+
+				setAllNftMetadata(metadataBuilder);
+			};
+			doLoad();
+		}
+	}, [activeAdress]);
+
+	// Confirm re-connect wallet when showing a user's collection
+	useEffect(() => {
+		if (!showAll) doConnect();
 	}, []);
 
 	useEffect(() => {
@@ -170,57 +174,71 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 			metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
 
 			setAllNftMetadata(metadataBuilder);
+			setPlaceHolderCount(metadataBuilder.length);
 		}
 	}, [nfts]);
 
 	return (
-		<div className="flex flex-wrap justify-center w-full gap-4 pt-10 pb-30 mb-30 mt-20">
-			{allNftMetadata.length === 0
-				? Array.from({ length: placeholderCount }, (_, i) => (
-						<div
-							key={i}
-							className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center p-3 lg:pb-5 pb-1"
-						>
-							<div className="animate-pulse flex flex-col items-center justify-center h-full border border-gray-300 shadow shadow-accent rounded-md p-4 mx-auto w-full">
-								<img
-									src="/hero/mountains/planet-3.png"
-									className="rotate-forever h-20 w-20 self-center"
-									alt="Loading spinner"
-								/>
-								<div className="mt-2 space-y-2">
-									<div className="h-4 bg-gray-200 rounded w-3/4"></div>
-									<div className="h-4 bg-gray-200 rounded w-1/4"></div>
+		<div className="flex flex-wrap flex-col justify-center w-full gap-4 pt-10 pb-30 mb-20 mt-20">
+			<div className="flex flex-col">
+				{activeAdress && <h1 className="text-xl md:text-3xl text-center">BM, {activeAdress}</h1>}
+				{!showAll &&
+					(allNftMetadata.length === 0 ? (
+						<h1 className="text-xl md:text-2xl text-center">
+							Your collection is looking lonely, why not <Link href="/">go shopping</Link>
+						</h1>
+					) : (
+						<h1 className="text-xl md:text-2xl text-center">Nice collection!</h1>
+					))}
+			</div>
+			<div className="flex flex-wrap flex-row justify-center w-full gap-4 pt-10 pb-30 mb-20 mt-20">
+				{allNftMetadata.length === 0
+					? Array.from({ length: placeholderCount }, (_, i) => (
+							<div
+								key={i}
+								className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center p-3 lg:pb-5 pb-1"
+							>
+								<div className="animate-pulse flex flex-col items-center justify-center h-full border border-gray-300 shadow shadow-accent rounded-md p-4 mx-auto w-full">
+									<img
+										src="/hero/mountains/planet-3.png"
+										className="rotate-forever h-20 w-20 mt-10 self-center"
+										alt="Loading spinner"
+									/>
+									<div className="mt-2 space-y-2">
+										<div className="h-4 bg-gray-200 rounded w-3/4"></div>
+										<div className="h-4 bg-gray-200 rounded w-1/4"></div>
+									</div>
 								</div>
 							</div>
-						</div>
-				  ))
-				: allNftMetadata.map((nft, i) => (
-						<div
-							key={i}
-							className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-bg p-3 lg:pb-5 pb-1 shadow-accent shadow-2xl"
-						>
-							{/* <Link href={`/nft/${nft.id}`}> */}
-							{/* <HoverMediaRenderer client={client} image={nft.image!} animation_url={nft.animation_url!} /> */}
-							<MediaRenderer
-								className="h-auto hover:scale-105 transition-transform duration-300 cursor-pointer shadow-md rounded-lg"
-								client={client}
-								src={nft.image}
-								width="100%"
-								height="100%"
-							/>
-							{/* </Link> */}
-							<div className="w-full rounded-md pr-2 pb-1">
-								<Link href={`/nft/${nft.id}`}>
-									<h1 className="mt-3 text-right lg:text-xl text-sm leading-none text-text underline decoration-accent">
-										Bears Love Mountains #{nft.id}
+					  ))
+					: allNftMetadata.map((nft, i) => (
+							<div
+								key={i}
+								className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-bg p-3 lg:pb-5 pb-1 shadow-accent shadow-2xl"
+							>
+								{/* <Link href={`/nft/${nft.id}`}> */}
+								{/* <HoverMediaRenderer client={client} image={nft.image!} animation_url={nft.animation_url!} /> */}
+								<MediaRenderer
+									className="h-auto hover:scale-105 transition-transform duration-300 cursor-pointer shadow-md rounded-lg"
+									client={client}
+									src={nft.image}
+									width="100%"
+									height="100%"
+								/>
+								{/* </Link> */}
+								<div className="w-full rounded-md pr-2 pb-1">
+									<Link href={`/nft/${nft.id}`}>
+										<h1 className="mt-3 text-right lg:text-xl text-sm leading-none text-text underline decoration-headerBg">
+											Bears Love Mountains #{nft.id}
+										</h1>
+									</Link>
+									<h1 className="mt-3 text-right lg:text-base text-sm leading-none text-text">
+										{!nft.forSale ? <p className="text-soldTextColor">SOLD</p> : "Price " + nft.price}
 									</h1>
-								</Link>
-								<h1 className="mt-3 text-right lg:text-base text-sm leading-none text-text">
-									{!nft.forSale ? "SOLD" : "Price " + nft.price}
-								</h1>
+								</div>
 							</div>
-						</div>
-				  ))}
+					  ))}
+			</div>
 		</div>
 	);
 };

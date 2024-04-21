@@ -28,8 +28,8 @@ const NFTsmall: React.FC<NFTsmallProps> = ({ imageUrl, animationUrl, id }) => {
 				className={`h-auto hover:scale-105 transition-transform duration-300 cursor-pointer shadow-md rounded-lg `}
 				onClick={showNFT}
 			/>
-			<div className="w-full rounded-md pr-2 pb-1 lexend-mega-300">
-				<h1 className={`lexend-mega-300 mt-3 text-right lg:text-sm text-sm leading-none text-headerText`}>
+			<div className="w-full rounded-md pr-2 pb-1">
+				<h1 className={`mt-3 text-right lg:text-sm text-sm leading-none text-headerText`}>
 					Bears Love Mountains #{id}
 				</h1>
 			</div>

@@ -26,13 +26,13 @@ const Navbar = () => {
 						</button>
 						{isMenuOpen && (
 							<div className="absolute right-0 mt-2 py-2 w-48 bg-bg rounded-lg shadow-xl shadow-accent">
-								<Link href="/" className="block px-4 py-2 text-text text-base">
+								<Link href="/" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									Home
 								</Link>
-								<Link href="/about" className="block px-4 py-2 text-text text-base">
+								<Link href="/about" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									About
 								</Link>
-								<Link href="/yourNFTs" className="block px-4 py-2 text-text text-base">
+								<Link href="/yourNFTs" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									Your NFTs
 								</Link>
 							</div>
