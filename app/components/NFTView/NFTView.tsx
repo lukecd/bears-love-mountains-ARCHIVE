@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { sepolia } from "thirdweb/chains";
 import { MediaRenderer, useReadContract, useActiveWalletChain } from "thirdweb/react";
 import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
-import { totalListings, getListing, buyFromListing } from "thirdweb/extensions/marketplace";
-
+import { totalListings, getListing, buyFromListing, createListing } from "thirdweb/extensions/marketplace";
+import { BaseTransactionOptions } from "thirdweb";
+import { CreateListingParams } from "thirdweb/extensions/marketplace";
 import { useActiveWallet } from "thirdweb/react";
 import { useActiveAccount } from "thirdweb/react";
 import { prepareContractCall, getContract, toWei } from "thirdweb";
@@ -80,7 +81,7 @@ interface NFTMetadata {
 }
 
 const NFTView: React.FC<NFTViewProps> = ({ id }) => {
-	const contract = getContract({
+	const marketplaceContract = getContract({
 		client,
 		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
 		chain: sepolia,
@@ -133,7 +134,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		const loadNFTdata = async () => {
 			// convert id to Bigint
 			const bigId = BigInt(parseInt(id) + 1);
-			const listing = await getListing({ contract, listingId: bigId });
+			const listing = await getListing({ contract: marketplaceContract, listingId: bigId });
 
 			const idNumber = Number(listing.asset.id.toString());
 			const price = listing.currencyValuePerToken.displayValue;
@@ -154,7 +155,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 		console.log("Preparing buy transaction");
 		const buyTx = await buyFromListing({
-			contract,
+			contract: marketplaceContract,
 			listingId: BigInt(parseInt(id) + 1),
 			quantity: BigInt(1),
 			recipient: activeAccount?.address!,
@@ -164,6 +165,34 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	};
 
 	const setupSell = async () => {};
+
+	const doCreateListing = async () => {
+		if (nftMetadata) {
+			console.log("Creating listing for", nftMetadata.id);
+			setTxActive(true);
+			const futureDate = new Date();
+			futureDate.setFullYear(futureDate.getFullYear() + 10);
+
+			const options: BaseTransactionOptions<CreateListingParams> = {
+				contract: marketplaceContract,
+				assetContractAddress: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
+				tokenId: BigInt(nftMetadata.id),
+				quantity: BigInt(1),
+				pricePerToken: "0.001", // Ether value, adjust for actual usage
+				startTimestamp: new Date(),
+				endTimestamp: new Date(new Date().setFullYear(new Date().getFullYear() + 10)),
+				isReservedListing: true,
+			};
+
+			try {
+				const listingTx = await createListing(options);
+				console.log("Listing transaction", listingTx);
+				await sendTransaction(listingTx);
+			} catch (error) {
+				console.error("Failed to create listing:", error);
+			}
+		}
+	};
 
 	const doConnect = async () => {
 		setTxActive(true);
@@ -235,12 +264,12 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 								<button
 									className="h-12 border-2 p-2.5 rounded-full font-bold mt-4 w-full bg-buttonBg hover:bg-buttonAccent ease-in-out shadow-2xl shadow-buttonAccent text-buttonText hover:duration-300 ease-in-out"
 									// disabled={isPending ? false : true}
-									onClick={!nftMetadata.forSale ? setupSell : !activeAccount ? doConnect : doBuyNow}
+									onClick={!activeAccount ? doConnect : !nftMetadata.forSale ? doCreateListing : doBuyNow}
 								>
-									{!nftMetadata.forSale ? (
+									{!activeAccount ? (
+										<span className="text-buttonText text-xl">Connect wallet</span>
+									) : !nftMetadata.forSale ? (
 										<span className="text-buttonText text-xl">List for sale</span>
-									) : !activeAccount ? (
-										<span className="text-buttonText text-xl">Connect Wallet</span>
 									) : sendTxPending ? (
 										<span className="text-buttonText text-2xl">Buying...</span>
 									) : isConnecting ? (
