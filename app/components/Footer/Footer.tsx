@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
 			<div className="container flex flex-row items-start mt-10">
 				<div className="text-center md:text-left md:w-1/2 lg:w-2/3 px-10">
 					<p className="text-lg lg:text-xl">In the mountain mist,</p>
-					<p className="text-lg lg:text-xl">Bear inhales nature's calm breeze,</p>
+					<p className="text-lg lg:text-xl">Bear inhales nature{"'"}s calm breeze,</p>
 					<p className="text-lg lg:text-xl">Peace in every puff.</p>
 				</div>
 				<div className="mt-4 lg:mt-0 flex flex-col items-start text-sm text-bg">
