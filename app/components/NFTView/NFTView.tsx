@@ -89,6 +89,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	const { mutate: sendTransaction, isPending: sendTxPending, data: txResult } = useSendTransaction();
 	const [nftMetadata, setNftMetadata] = useState<NFTMetadata | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
 	const [mintSuccess, setMintSuccess] = useState(false);
 	const switchChain = useSwitchActiveWalletChain();
 	const { connect, isConnecting, error } = useConnect();
@@ -132,7 +133,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	useEffect(() => {
 		const loadNFTdata = async () => {
-			// convert id to Bigint
+			setIsLoading(true);
 			const bigId = BigInt(parseInt(id) + 1);
 			const listing = await getListing({ contract: marketplaceContract, listingId: bigId });
 
@@ -146,6 +147,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 				forSale: listing.status === "ACTIVE",
 			};
 			setNftMetadata(metadata);
+			setIsLoading(false);
 		};
 		loadNFTdata();
 	}, []);
@@ -221,6 +223,23 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		}
 		setTxActive(false);
 	};
+
+	if (isLoading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<img
+					src="/hero/mountains/planet-1.png"
+					alt="Stationary Planet"
+					className="rotate-forever"
+					style={{
+						filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
+						zIndex: 20,
+						position: "absolute",
+					}}
+				/>
+			</div>
+		);
+	}
 
 	return (
 		// Create a flexbox div with a background image
