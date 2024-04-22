@@ -99,6 +99,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	const [txActive, setTxActive] = useState<boolean>(false);
 	const [overlayOpacity, setOverlayOpacity] = useState(0);
 	const [showOverlay, setShowOverlay] = useState(false);
+	const [showSellOverlay, setSellShowOverlay] = useState(false);
 
 	useEffect(() => {
 		if (txActive) {
@@ -166,7 +167,14 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		await sendTransaction(buyTx);
 	};
 
-	const setupSell = async () => {};
+	const setupSell = async () => {
+		setSellShowOverlay(true); // Show the overlay with fading effect
+		console.log("Setting up sell");
+	};
+
+	const doCancel = () => {
+		setSellShowOverlay(false); // Hide the overlay with fading effect
+	};
 
 	const doCreateListing = async () => {
 		if (nftMetadata) {
@@ -247,8 +255,8 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 			<div className="flex flex-row md:justify-center items-center w-full md:gap-x-4 ">
 				{nftMetadata && (
 					<>
-						<div className="grid grid-cols-1 md:grid-cols-3 md:gap-4 mt-20 md:mt-0">
-							<div className="md:col-span-2 md:p-4">
+						<div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 mt-20 md:mt-0">
+							<div className="md:col-span-2 md:p-4 mt-10">
 								<ResponsiveMediaRenderer client={client} url={nftMetadata.animation_url!} />
 								{showOverlay && (
 									<div
@@ -279,37 +287,62 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 									</h1>
 								</div>
 							</div>
-							<div className="md:col-span-1 md:self-end p-4 mb-20 mt-3  md:mt-0 ">
-								<button
-									className="h-12 border-2 p-2.5 rounded-full font-bold mt-4 w-full bg-buttonBg hover:bg-buttonAccent ease-in-out shadow-2xl shadow-buttonAccent text-buttonText hover:duration-300 ease-in-out"
-									// disabled={isPending ? false : true}
-									onClick={!activeAccount ? doConnect : !nftMetadata.forSale ? doCreateListing : doBuyNow}
-								>
-									{!activeAccount ? (
-										<span className="text-buttonText text-xl">Connect wallet</span>
-									) : !nftMetadata.forSale ? (
-										<span className="text-buttonText text-xl">List for sale</span>
-									) : sendTxPending ? (
-										<span className="text-buttonText text-2xl">Buying...</span>
-									) : isConnecting ? (
-										<span className="text-buttonText text-2xl">Connecting...</span>
-									) : (
-										<span className="text-buttonText text-2xl">Buy Now</span>
-									)}
-								</button>
+							<div className="md:col-span-2 md:self-end p-4 ">
+								{showSellOverlay && (
+									<div className="bg-bg self-start p-5 rounded-lg shadow-xl shadow-buttonAccent flex flex-col justify-start mb-20">
+										<div className="">
+											<div>
+												<label className="block font-medium text-text">Price</label>
+												<div className="mt-1 relative rounded-md shadow-sm">
+													<input
+														type="number"
+														className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 border-gray-300 rounded-md"
+														placeholder="0.00"
+													/>
+													<div className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
+														{nftMetadata?.token}
+													</div>
+												</div>
+											</div>
+											<button className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-300 ease-in-out shadow-xl text-buttonText">
+												Approve Access
+											</button>
+											<button className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-300 ease-in-out shadow-xl text-buttonText">
+												List for Sale
+											</button>
+											<button
+												onClick={doCancel}
+												className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonAccent hover:buttonBg transition-shadow duration-300 ease-in-out shadow-xl text-white"
+											>
+												Cancel
+											</button>
+										</div>
+									</div>
+								)}
+								{!showSellOverlay && (
+									<button
+										className="mb-20 h-12 border-2 p-2.5 rounded-full font-bold mt-4 w-full md:w-[1/2] px-10 bg-buttonBg hover:bg-buttonAccent ease-in-out shadow-2xl shadow-buttonAccent text-buttonText hover:duration-300 ease-in-out"
+										// disabled={isPending ? false : true}
+										onClick={!activeAccount ? doConnect : !nftMetadata.forSale ? setupSell : doBuyNow}
+									>
+										{!activeAccount ? (
+											<span className="text-buttonText text-xl">Connect wallet</span>
+										) : !nftMetadata.forSale ? (
+											<span className="text-buttonText text-xl">List for sale</span>
+										) : sendTxPending ? (
+											<span className="text-buttonText text-2xl">Buying...</span>
+										) : isConnecting ? (
+											<span className="text-buttonText text-2xl">Connecting...</span>
+										) : (
+											<span className="text-buttonText text-2xl">Buy Now</span>
+										)}
+									</button>
+								)}
 							</div>
 						</div>
 					</>
 				)}
 			</div>
-
-			<video
-				src="/hero/video-sprites/bear1.webm"
-				autoPlay
-				loop
-				className="hidden lg:block absolute bottom-[-220px] right-[-100px] scale-90"
-				style={{ transform: "scale(0.7)" }}
-			></video>
 		</div>
 	);
 };
