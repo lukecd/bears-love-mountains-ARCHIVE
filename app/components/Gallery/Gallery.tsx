@@ -185,7 +185,10 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 				{!showAll &&
 					(allNftMetadata.length === 0 ? (
 						<h1 className="text-xl md:text-2xl text-center">
-							Your collection is looking lonely, why not <Link href="/">go shopping</Link>
+							Your collection is looking lonely, why not{" "}
+							<Link className="underline decoration-buttonAccent" href="/">
+								go shopping
+							</Link>
 						</h1>
 					) : (
 						<h1 className="text-xl md:text-2xl text-center">Nice collection!</h1>
@@ -233,7 +236,11 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 										</h1>
 									</Link>
 									<h1 className="mt-3 text-right lg:text-base text-sm leading-none text-text">
-										{!nft.forSale ? <p className="text-soldTextColor">SOLD</p> : "Price " + nft.price}
+										{!nft.forSale ? (
+											<p className="text-soldTextColor">SOLD</p>
+										) : (
+											"Price " + nft.price + "   $" + nft.token
+										)}
 									</h1>
 								</div>
 							</div>

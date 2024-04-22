@@ -56,7 +56,7 @@ const ResponsiveMediaRenderer: React.FC<ResponsiveProps> = ({ client, url }) => 
 
 	return (
 		<MediaRenderer
-			className="cursor-pointer border-8 border-nftBorder shadow-xl shadow-accent"
+			className="cursor-pointer mt-10 border-8 border-nftBorder shadow-xl shadow-accent"
 			client={client}
 			src={url}
 			width={size}
@@ -251,12 +251,12 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	return (
 		// Create a flexbox div with a background image
-		<div className="flex flex-row w-full h-full bg-bg mt-[100px] mb-[70px] md:mb-[1px]">
-			<div className="flex flex-row md:justify-center items-center w-full md:gap-x-4">
+		<div className="flex flex-row w-full h-full bg-bg mt-10 mb-20">
+			<div className="flex flex-row md:justify-center items-center w-full md:gap-x-4 ">
 				{nftMetadata && (
 					<>
-						<div className="flex flex-col md:flex-row md:gap-4 mt-20 md:mt-0 md:self-start">
-							<div className="mt-10">
+						<div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 mt-20 md:mt-0 md:self-start">
+							<div className="md:col-span-2 md:p-4 mt-10 md:self-start">
 								<ResponsiveMediaRenderer client={client} url={nftMetadata.animation_url!} />
 								{showOverlay && (
 									<div
@@ -277,9 +277,9 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 								)}
 							</div>
 
-							<div className="mt-10">
-								<div className="rounded-lg shadow-xl shadow-shadow bg-accent bg-opacity-50 px-5 py-5 shadow-accent ml-3 mr-3">
-									<h1 className="text-2xl text-black text-left">Bears Love Mountains #{nftMetadata.id}</h1>
+							<div className="md:col-span-2 md:self-start md:p-4 mt-10">
+								<div className="rounded-md">
+									<h1 className="mt-3 text-2xl text-black text-left">Bears Love Mountains #{nftMetadata.id}</h1>
 									<h1 className="text-xl text-black text-left">
 										{!nftMetadata.forSale ? (
 											<p className="text-soldTextColor">SOLD</p>
@@ -289,7 +289,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 									</h1>
 								</div>
 								{showSellOverlay && (
-									<div className="bg-bg self-start p-5 rounded-lg shadow-xl shadow-buttonAccent flex flex-col justify-start mt-5">
+									<div className="bg-bg self-start p-5 rounded-lg shadow-xl shadow-buttonAccent flex flex-col justify-start">
 										<div className="">
 											<div>
 												<label className="block font-medium text-text">Price</label>
@@ -321,7 +321,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 								)}
 								{!showSellOverlay && (
 									<button
-										className="mb-20 h-12 border-2 p-2.5 rounded-full font-bold mt-10 w-full md:w-[1/2] px-10 bg-buttonBg hover:bg-buttonAccent ease-in-out shadow-2xl shadow-buttonAccent text-buttonText hover:duration-300 ease-in-out"
+										className="mb-20 h-12 border-2 p-2.5 rounded-full font-bold mt-10 w-[1/2] px-10 bg-buttonBg hover:bg-buttonAccent ease-in-out shadow-2xl shadow-buttonAccent text-buttonText hover:duration-300 ease-in-out"
 										// disabled={isPending ? false : true}
 										onClick={!activeAccount ? doConnect : !nftMetadata.forSale ? setupSell : doBuyNow}
 									>

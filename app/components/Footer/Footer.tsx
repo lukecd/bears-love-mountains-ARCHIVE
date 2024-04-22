@@ -2,8 +2,8 @@ import React from "react";
 
 const Footer: React.FC = () => {
 	return (
-		<div className="bg-footerBg text-buttonAccent w-full mt-[150px] relative">
-			<div className="container flex flex-row items-start mt-10">
+		<div className="bg-footerBg text-buttonAccent w-full relative z-20">
+			<div className="container flex flex-row items-start">
 				<div className="text-center md:text-left md:w-1/2 lg:w-2/3 px-10">
 					<p className="text-lg lg:text-xl">In the mountain mist,</p>
 					<p className="text-lg lg:text-xl">Bear inhales nature{"'"}s calm breeze,</p>
@@ -24,15 +24,17 @@ const Footer: React.FC = () => {
 					</a>
 				</div>
 			</div>
-			<video
-				src="/hero/video-sprites/bear1.webm"
-				autoPlay
-				loop
-				muted
-				className="absolute -bottom-40 -right-20 lg:block"
-				style={{ transform: "scale(0.5)" }}
-				// style={{ maxWidth: "200px", maxHeight: "100px" }} // Adjust these values as needed
-			></video>
+			<div className="z-0 hidden md:block">
+				<video
+					src="/hero/video-sprites/bear1.webm"
+					autoPlay
+					loop
+					muted
+					className="absolute -bottom-12 -right-20 lg:block"
+					style={{ transform: "scale(0.5)" }}
+					// style={{ maxWidth: "200px", maxHeight: "100px" }} // Adjust these values as needed
+				></video>
+			</div>
 		</div>
 	);
 };
