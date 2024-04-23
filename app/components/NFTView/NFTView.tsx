@@ -7,7 +7,15 @@ import { useRouter } from "next/navigation";
 import { sepolia } from "thirdweb/chains";
 import { MediaRenderer, useReadContract, useActiveWalletChain } from "thirdweb/react";
 import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
-import { totalListings, getListing, buyFromListing, createListing } from "thirdweb/extensions/marketplace";
+import {
+	totalListings,
+	getListing,
+	buyFromListing,
+	createListing,
+	isBuyerApprovedForListing,
+	approveBuyerForListing,
+} from "thirdweb/extensions/marketplace";
+import { ownerOf } from "thirdweb/extensions/erc721";
 import { BaseTransactionOptions } from "thirdweb";
 import { CreateListingParams } from "thirdweb/extensions/marketplace";
 import { useActiveWallet } from "thirdweb/react";
@@ -23,7 +31,7 @@ import { waitForReceipt } from "thirdweb";
 
 import { ThirdwebProvider, ConnectButton, TransactionButton, darkTheme } from "thirdweb/react";
 import { createWallet, walletConnect, inAppWallet, injectedProvider } from "thirdweb/wallets";
-
+import Link from "next/link";
 const client = createThirdwebClient({
 	clientId: THIRD_WEB_CLIENT_ID,
 });
@@ -71,6 +79,7 @@ type NFTViewProps = {
 
 interface NFTMetadata {
 	id: number;
+	owner?: string;
 	price?: string;
 	token?: string;
 	image?: string;
@@ -87,6 +96,12 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		chain: sepolia,
 	});
 
+	const nftContract = getContract({
+		client,
+		address: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
+		chain: sepolia,
+	});
+
 	const { mutate: sendTransaction, isPending: sendTxPending, data: txResult } = useSendTransaction();
 	const [nftMetadata, setNftMetadata] = useState<NFTMetadata | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -100,7 +115,9 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	const [overlayOpacity, setOverlayOpacity] = useState(0);
 	const [showOverlay, setShowOverlay] = useState(false);
 	const [showSellOverlay, setSellShowOverlay] = useState(false);
+	const [isOwner, setIsOwner] = useState<boolean>(false);
 
+	// Used to fade in and out the "in progress" overlay
 	useEffect(() => {
 		if (txActive) {
 			setShowOverlay(true);
@@ -111,6 +128,15 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		}
 	}, [txActive]);
 
+	// Check if the active account is the owner of the NFT
+	// If it is the owner, we can show the "list for sale" button
+	useEffect(() => {
+		if (activeAccount) {
+			setIsOwner(activeAccount.address === nftMetadata?.owner);
+		}
+	}, [activeAccount]);
+
+	// This is called when we have a tx hash, we then wait for the receipt
 	useEffect(() => {
 		console.log("sendTxPending", sendTxPending);
 		console.log("txResult", txResult?.transactionHash);
@@ -135,7 +161,12 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	useEffect(() => {
 		const loadNFTdata = async () => {
 			setIsLoading(true);
-			const bigId = BigInt(parseInt(id) + 1);
+			const bigId = BigInt(parseInt(id));
+
+			// First, get ownership & approval details from NFT contract
+			const ownerWallet = await ownerOf({ contract: nftContract, tokenId: bigId });
+			console.log({ ownerWallet });
+			// Next, get the listing details from the marketplace contract
 			const listing = await getListing({ contract: marketplaceContract, listingId: bigId });
 
 			const idNumber = Number(listing.asset.id.toString());
@@ -143,17 +174,21 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 			const metadata: NFTMetadata = {
 				...listing.asset.metadata,
 				id: idNumber,
+				owner: ownerWallet,
 				price: price,
 				token: listing.currencyValuePerToken.symbol,
 				forSale: listing.status === "ACTIVE",
 			};
+			console.log({ metadata });
 			setNftMetadata(metadata);
 			setIsLoading(false);
 		};
 		loadNFTdata();
 	}, []);
 
+	// Called when the user clicks Buy Now
 	const doBuyNow = async () => {
+		// Start the "in progress" spinner
 		setTxActive(true);
 
 		console.log("Preparing buy transaction");
@@ -165,15 +200,19 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		});
 		console.log("Sending buy transaction");
 		await sendTransaction(buyTx);
+
+		// Note we don't wait for tx to complete here
 	};
 
+	// Show the for sale overlay with fading effect
 	const setupSell = async () => {
-		setSellShowOverlay(true); // Show the overlay with fading effect
+		setSellShowOverlay(true);
 		console.log("Setting up sell");
 	};
 
+	// Hide the for sale overlay with fading effect
 	const doCancel = () => {
-		setSellShowOverlay(false); // Hide the overlay with fading effect
+		setSellShowOverlay(false);
 	};
 
 	const doCreateListing = async () => {
@@ -232,6 +271,10 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		setTxActive(false);
 	};
 
+	const doApproveAccess = async () => {
+		// approve on NFT contract, then list on marketplace
+	};
+
 	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center h-screen">
@@ -256,7 +299,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 				{nftMetadata && (
 					<>
 						<div className="flex flex-col md:flex-row md:gap-4 mt-20 md:mt-0 md:self-start">
-							<div className="mt-10">
+							<div className=" mt-10">
 								<ResponsiveMediaRenderer client={client} url={nftMetadata.animation_url!} />
 								{showOverlay && (
 									<div
@@ -277,16 +320,22 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 								)}
 							</div>
 
-							<div className="mt-10">
-								<div className="rounded-lg shadow-xl shadow-shadow bg-accent bg-opacity-50 px-5 py-5 shadow-accent ml-3 mr-3">
+							<div className="w-1/2 mt-10">
+								<div className="rounded-lg shadow-xl shadow-shadow bg-accent bg-opacity-50 px-5 py-5 shadow-accent ml-3 mr-3 md:ml-0 md:mr-0">
 									<h1 className="text-2xl text-black text-left">Bears Love Mountains #{nftMetadata.id}</h1>
 									<h1 className="text-xl text-black text-left">
 										{!nftMetadata.forSale ? (
-											<p className="text-soldTextColor">SOLD</p>
+											<p className="text-soldTextColor">Not For Sale</p>
 										) : (
-											"Price " + nftMetadata.price + " " + nftMetadata.token
+											"Price: " + nftMetadata.price + " " + nftMetadata.token
 										)}
 									</h1>
+									<h2 className="text-sm text-black text-left">
+										Owner:{" "}
+										<Link className="underline decoration-buttonAccent" href={`/myNFTs/${nftMetadata.owner}`}>
+											{`${nftMetadata.owner?.slice(0, 5)}...${nftMetadata.owner?.slice(-5)}`}
+										</Link>
+									</h2>
 								</div>
 								{showSellOverlay && (
 									<div className="bg-bg self-start p-5 rounded-lg shadow-xl shadow-buttonAccent flex flex-col justify-start mt-5">
@@ -304,7 +353,10 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 													</div>
 												</div>
 											</div>
-											<button className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-300 ease-in-out shadow-xl text-buttonText">
+											<button
+												className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-500 ease-in-out shadow-xl text-buttonText"
+												onClick={doApproveAccess}
+											>
 												Approve Access
 											</button>
 											<button className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-300 ease-in-out shadow-xl text-buttonText">
@@ -327,7 +379,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 									>
 										{!activeAccount ? (
 											<span className="text-buttonText text-xl">Connect wallet</span>
-										) : !nftMetadata.forSale ? (
+										) : !nftMetadata.forSale && isOwner ? (
 											<span className="text-buttonText text-xl">List for sale</span>
 										) : sendTxPending ? (
 											<span className="text-buttonText text-2xl">Buying...</span>

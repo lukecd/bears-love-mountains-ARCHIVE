@@ -46,7 +46,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [txActive, setTxActive] = useState<boolean>(false);
 	const [overlayOpacity, setOverlayOpacity] = useState(0);
 	const [showOverlay, setShowOverlay] = useState(false);
-	const [activeAdress, setActiveAdress] = useState<string>("");
+	const [activeAddress, setactiveAddress] = useState<string>("");
 
 	const nftContract = getContract({
 		client,
@@ -100,7 +100,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 			console.log({ client });
 
 			console.log("metamask", metamask.getAccount());
-			setActiveAdress(metamask.getAccount()?.address!);
+			setactiveAddress(metamask.getAccount()?.address!);
 			// return the wallet
 			return metamask;
 		});
@@ -114,11 +114,11 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	// Called when activeAddress is set
 	useEffect(() => {
 		// ETH addresses are 42 characters long (with the 0x)
-		if (activeAdress.length === 42) {
+		if (activeAddress.length === 42) {
 			const doLoad = async () => {
 				const ownedNFTs = await getOwnedNFTs({
 					contract: nftContract,
-					owner: activeAdress!,
+					owner: activeAddress!,
 				});
 				console.log({ ownedNFTs });
 				setPlaceHolderCount(ownedNFTs.length);
@@ -144,7 +144,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 			};
 			doLoad();
 		}
-	}, [activeAdress]);
+	}, [setIsOwner]);
 
 	// Confirm re-connect wallet when showing a user's collection
 	useEffect(() => {
@@ -181,7 +181,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	return (
 		<div className="flex flex-wrap flex-col justify-center w-full gap-4 pt-10 pb-30 mb-20 mt-20">
 			<div className="flex flex-col">
-				{activeAdress && <h1 className="text-xl md:text-3xl text-center">BM, {activeAdress}</h1>}
+				{activeAddress && <h1 className="text-xl md:text-3xl text-center">BM, {activeAddress}</h1>}
 				{!showAll &&
 					(allNftMetadata.length === 0 ? (
 						<h1 className="text-xl md:text-2xl text-center">
@@ -237,7 +237,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 									</Link>
 									<h1 className="mt-3 text-right lg:text-base text-sm leading-none text-text">
 										{!nft.forSale ? (
-											<p className="text-soldTextColor">SOLD</p>
+											<p className="text-soldTextColor">Not For Sale</p>
 										) : (
 											"Price " + nft.price + "   $" + nft.token
 										)}
