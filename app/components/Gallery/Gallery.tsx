@@ -47,6 +47,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [overlayOpacity, setOverlayOpacity] = useState(0);
 	const [showOverlay, setShowOverlay] = useState(false);
 	const [activeAddress, setactiveAddress] = useState<string>("");
+	const [isOnwer, setIsOwner] = useState<boolean>(false);
 
 	const nftContract = getContract({
 		client,
