@@ -61,18 +61,12 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 		chain: sepolia,
 	});
 
-	const { data: marketplaceNftCount } = useReadContract(totalListings, { contract: marketplaceContract });
+	const { data: nftCount } = useReadContract(totalListings, { contract: marketplaceContract });
 
-	const { data: marketplaceNfts } = useReadContract(getAllListings, {
+	const { data: nfts } = useReadContract(getAllListings, {
 		contract: marketplaceContract,
 		start: 0,
-		count: marketplaceNftCount,
-	});
-
-	const { data: mainNFTs } = useReadContract(getNFTs, {
-		contract: nftContract,
-		start: 0,
-		count: 42, // Can hardcode this for now as we know there are only 42 NFTs
+		count: nftCount,
 	});
 
 	interface NFTMetadata {
@@ -85,42 +79,6 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 		description?: string;
 		forSale: boolean;
 	}
-
-	useEffect(() => {
-		if (mainNFTs && marketplaceNfts && showAll) {
-			console.log("marketplaceNfts", marketplaceNfts);
-
-			// Sort mainNFTs by ID
-			mainNFTs.sort((a, b) => (a.id > b.id ? 1 : -1));
-
-			// Filter marketplaceNfts to only show active listings
-			const activeNfts = marketplaceNfts.filter((nft) => nft.status === "ACTIVE");
-			const metadataBuilder: NFTMetadata[] = [];
-
-			for (let i = 0; i < mainNFTs.length; i++) {
-				// Check if the NFT is for sale, by searching in marketplaceNfts
-				// Such that idNumber is marketplaceNfts.asset.id
-				const marketplaceIndex = activeNfts.findIndex((nft) => nft.asset.id === mainNFTs[i].id);
-				const idNumber = Number(mainNFTs[i].id.toString());
-
-				console.log({ marketplaceIndex, idNumber });
-
-				const metadata: NFTMetadata = {
-					...mainNFTs[i].metadata,
-					id: idNumber,
-					price: marketplaceIndex !== -1 ? marketplaceNfts[i].currencyValuePerToken.displayValue : "",
-					token: marketplaceIndex !== -1 ? marketplaceNfts[i].currencyValuePerToken.symbol : "",
-					forSale: marketplaceIndex !== -1,
-				};
-				metadataBuilder.push(metadata);
-			}
-			console.log({ metadataBuilder });
-			metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
-
-			setAllNftMetadata(metadataBuilder);
-			setPlaceHolderCount(metadataBuilder.length);
-		}
-	}, [mainNFTs, marketplaceNfts]);
 
 	const doConnect = async () => {
 		setTxActive(true);
@@ -193,6 +151,33 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	useEffect(() => {
 		if (!showAll) doConnect();
 	}, []);
+
+	useEffect(() => {
+		if (nfts && showAll) {
+			console.log("nfts", nfts);
+			const metadataBuilder: NFTMetadata[] = [];
+
+			const activeNfts = nfts.filter((nft) => nft.status !== "CANCELLED");
+
+			for (let i = 0; i < activeNfts.length; i++) {
+				const idNumber = Number(activeNfts[i].asset.id.toString());
+				const price = activeNfts[i].currencyValuePerToken.displayValue;
+				const metadata: NFTMetadata = {
+					...activeNfts[i].asset.metadata,
+					id: idNumber,
+					price: price,
+					token: activeNfts[i].currencyValuePerToken.symbol,
+					forSale: activeNfts[i].status === "ACTIVE",
+				};
+				metadataBuilder.push(metadata);
+			}
+			console.log({ metadataBuilder });
+			metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
+
+			setAllNftMetadata(metadataBuilder);
+			setPlaceHolderCount(metadataBuilder.length);
+		}
+	}, [nfts]);
 
 	return (
 		<div className="flex flex-wrap flex-col justify-center w-full gap-4 pt-10 pb-30 mb-20 mt-20">

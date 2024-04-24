@@ -14,7 +14,9 @@ import {
 	createListing,
 	isBuyerApprovedForListing,
 	approveBuyerForListing,
+	getAllListings,
 } from "thirdweb/extensions/marketplace";
+
 import { ownerOf } from "thirdweb/extensions/erc721";
 import { BaseTransactionOptions } from "thirdweb";
 import { CreateListingParams } from "thirdweb/extensions/marketplace";
@@ -22,6 +24,7 @@ import { useActiveWallet } from "thirdweb/react";
 import { useActiveAccount } from "thirdweb/react";
 import { prepareContractCall, getContract, toWei } from "thirdweb";
 import { useSendTransaction } from "thirdweb/react";
+import { getNFT } from "thirdweb/extensions/erc721";
 
 import { useWaitForReceipt } from "thirdweb/react";
 import { useSwitchActiveWalletChain } from "thirdweb/react";
@@ -90,6 +93,7 @@ interface NFTMetadata {
 }
 
 const NFTView: React.FC<NFTViewProps> = ({ id }) => {
+	console.log("NFTView", id);
 	const marketplaceContract = getContract({
 		client,
 		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
@@ -163,21 +167,29 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 			setIsLoading(true);
 			const bigId = BigInt(parseInt(id));
 
-			// First, get ownership & approval details from NFT contract
+			// 1: get ownership & approval details from NFT contract
 			const ownerWallet = await ownerOf({ contract: nftContract, tokenId: bigId });
-			console.log({ ownerWallet });
-			// Next, get the listing details from the marketplace contract
-			const listing = await getListing({ contract: marketplaceContract, listingId: bigId });
 
-			const idNumber = Number(listing.asset.id.toString());
-			const price = listing.currencyValuePerToken.displayValue;
+			// 2: get NFT details from the NFT contract
+			const nft = await getNFT({ contract: nftContract, tokenId: bigId });
+
+			// 3: get the listing details from the marketplace contract
+			const allListings = await getAllListings({ contract: marketplaceContract });
+
+			// Sort allListings by ID
+			allListings.sort((a, b) => (a.asset.id > b.asset.id ? 1 : -1));
+
+			// Find the index of the NFT in the marketplace listings
+			const marketplaceIndex = allListings.findIndex((nft) => nft.asset.id === bigId);
+
+			const idNumber = Number(nft.id.toString());
 			const metadata: NFTMetadata = {
-				...listing.asset.metadata,
+				...nft.metadata,
 				id: idNumber,
 				owner: ownerWallet,
-				price: price,
-				token: listing.currencyValuePerToken.symbol,
-				forSale: listing.status === "ACTIVE",
+				price: marketplaceIndex !== -1 ? allListings[marketplaceIndex].currencyValuePerToken.displayValue : "",
+				token: marketplaceIndex !== -1 ? allListings[marketplaceIndex].currencyValuePerToken.symbol : "",
+				forSale: marketplaceIndex !== -1,
 			};
 			console.log({ metadata });
 			setNftMetadata(metadata);
