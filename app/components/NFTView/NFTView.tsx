@@ -17,7 +17,7 @@ import {
 	getAllListings,
 } from "thirdweb/extensions/marketplace";
 
-import { ownerOf } from "thirdweb/extensions/erc721";
+import { ownerOf, approve } from "thirdweb/extensions/erc721";
 import { BaseTransactionOptions } from "thirdweb";
 import { CreateListingParams } from "thirdweb/extensions/marketplace";
 import { useActiveWallet } from "thirdweb/react";
@@ -93,7 +93,6 @@ interface NFTMetadata {
 }
 
 const NFTView: React.FC<NFTViewProps> = ({ id }) => {
-	console.log("NFTView", id);
 	const marketplaceContract = getContract({
 		client,
 		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
@@ -121,6 +120,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	const [showOverlay, setShowOverlay] = useState(false);
 	const [showSellOverlay, setSellShowOverlay] = useState(false);
 	const [isOwner, setIsOwner] = useState<boolean>(false);
+	const [isApproved, setIsApproved] = useState<boolean>(false);
 
 	// Used to fade in and out the "in progress" overlay
 	useEffect(() => {
@@ -296,8 +296,19 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		}
 	};
 
+	// approve on NFT contract, then list on marketplace
 	const doApproveAccess = async () => {
-		// approve on NFT contract, then list on marketplace
+		setTxActive(true);
+		console.log("Approving access");
+		const approval = await approve({
+			contract: nftContract,
+			to: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
+			tokenId: BigInt(nftMetadata?.id!),
+		});
+		console.log("Approval", approval);
+
+		const tx = await sendTransaction(approval);
+		console.log("tx", tx);
 	};
 
 	if (isLoading) {
@@ -378,13 +389,20 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 													</div>
 												</div>
 											</div>
+											{!isApproved && (
+												<button
+													className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-500 ease-in-out shadow-xl text-buttonText"
+													onClick={doApproveAccess}
+												>
+													Approve Access
+												</button>
+											)}
 											<button
-												className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-500 ease-in-out shadow-xl text-buttonText"
-												onClick={doApproveAccess}
+												className={`mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent ${
+													!isApproved ? "opacity-50 cursor-not-allowed" : ""
+												}`}
+												disabled={!isApproved}
 											>
-												Approve Access
-											</button>
-											<button className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-300 ease-in-out shadow-xl text-buttonText">
 												List for Sale
 											</button>
 											<button
