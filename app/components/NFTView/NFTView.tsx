@@ -29,7 +29,7 @@ import { getNFT } from "thirdweb/extensions/erc721";
 import { useWaitForReceipt } from "thirdweb/react";
 import { useSwitchActiveWalletChain } from "thirdweb/react";
 import { createThirdwebClient } from "thirdweb";
-import { useConnect } from "thirdweb/react";
+import { useConnect, useDisconnect } from "thirdweb/react";
 import { waitForReceipt } from "thirdweb";
 
 import { ThirdwebProvider, ConnectButton, TransactionButton, darkTheme } from "thirdweb/react";
@@ -112,6 +112,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	const [mintSuccess, setMintSuccess] = useState(false);
 	const switchChain = useSwitchActiveWalletChain();
 	const { connect, isConnecting, error } = useConnect();
+	const { disconnect } = useDisconnect();
 	const activeAccount = useActiveAccount();
 	const wallet = useActiveWallet();
 	const activeChain = useActiveWalletChain();
@@ -174,14 +175,16 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 			const nft = await getNFT({ contract: nftContract, tokenId: bigId });
 
 			// 3: get the listing details from the marketplace contract
+			// I wish there was a way to query the marketplace contract for a specific NFT
 			const allListings = await getAllListings({ contract: marketplaceContract });
+			const activeListings = allListings.filter((nft) => nft.status === "ACTIVE");
 
-			// Sort allListings by ID
-			allListings.sort((a, b) => (a.asset.id > b.asset.id ? 1 : -1));
+			// // Sort allListings by ID
+			// allListings.sort((a, b) => (a.asset.id > b.asset.id ? 1 : -1));
 
 			// Find the index of the NFT in the marketplace listings
-			const marketplaceIndex = allListings.findIndex((nft) => nft.asset.id === bigId);
-
+			const marketplaceIndex = activeListings.findIndex((nft) => nft.asset.id === bigId);
+			console.log({ marketplaceIndex });
 			const idNumber = Number(nft.id.toString());
 			const metadata: NFTMetadata = {
 				...nft.metadata,
@@ -256,9 +259,11 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	};
 
 	const doConnect = async () => {
+		console.log("Connecting wallet");
+
 		setTxActive(true);
 		await connect(async () => {
-			const metamask = createWallet("io.metamask"); // pass the wallet id
+			const metamask = createWallet("io.metamask");
 
 			// if user has metamask installed, connect to it
 			if (injectedProvider("io.metamask")) {
@@ -276,11 +281,19 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 			// return the wallet
 			return metamask;
 		});
+
 		// Switch to the correct chain
 		if (activeChain?.name !== "sepolia") {
 			await switchChain(sepolia);
 		}
 		setTxActive(false);
+	};
+
+	const doDisconnect = async () => {
+		console.log("Disconnecting wallet");
+		if (wallet) {
+			const returnType = await disconnect(wallet);
+		}
 	};
 
 	const doApproveAccess = async () => {
@@ -384,23 +397,25 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 									</div>
 								)}
 								{!showSellOverlay && (
-									<button
-										className="mb-20 h-12 border-2 p-2.5 rounded-full font-bold mt-10 w-full md:w-[1/2] px-10 bg-buttonBg hover:bg-buttonAccent ease-in-out shadow-2xl shadow-buttonAccent text-buttonText hover:duration-300 ease-in-out"
-										// disabled={isPending ? false : true}
-										onClick={!activeAccount ? doConnect : !nftMetadata.forSale ? setupSell : doBuyNow}
-									>
-										{!activeAccount ? (
-											<span className="text-buttonText text-xl">Connect wallet</span>
-										) : !nftMetadata.forSale && isOwner ? (
-											<span className="text-buttonText text-xl">List for sale</span>
-										) : sendTxPending ? (
-											<span className="text-buttonText text-2xl">Buying...</span>
-										) : isConnecting ? (
-											<span className="text-buttonText text-2xl">Connecting...</span>
-										) : (
-											<span className="text-buttonText text-2xl">Buy Now</span>
-										)}
-									</button>
+									<div className="button-container flex flex-col items-center space-y-4">
+										{/* Button for listing for sale or buying */}
+										<button
+											className={`mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent ${
+												!activeAccount ? "opacity-50 cursor-not-allowed" : ""
+											}`}
+											onClick={!nftMetadata.forSale ? setupSell : doBuyNow}
+											disabled={!activeAccount}
+										>
+											<span className="text-xl">{!nftMetadata.forSale && isOwner ? "List for sale" : "Buy Now"}</span>
+										</button>
+										{/* Button for connecting or disconnecting the wallet */}
+										<button
+											className="h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent"
+											onClick={activeAccount ? doDisconnect : doConnect}
+										>
+											<span className="text-xl">{activeAccount ? "Disconnect wallet" : "Connect wallet"}</span>
+										</button>
+									</div>
 								)}
 							</div>
 						</div>
