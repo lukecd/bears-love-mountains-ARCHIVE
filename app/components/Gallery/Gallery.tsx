@@ -8,7 +8,6 @@ import { MediaRenderer, useReadContract, useActiveWalletChain } from "thirdweb/r
 import { useRouter } from "next/router";
 import { sepolia } from "thirdweb/chains";
 import { createThirdwebClient, defineChain } from "thirdweb";
-import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
 import { totalListings, getAllListings } from "thirdweb/extensions/marketplace";
 import { getOwnedNFTs, getNFTs } from "thirdweb/extensions/erc721";
 import { useActiveAccount } from "thirdweb/react";
@@ -16,23 +15,13 @@ import HoverMediaRenderer from "../HoverMediaRenderer/HoverMediaRenderer";
 import { useConnect } from "thirdweb/react";
 import { createWallet, walletConnect, inAppWallet, injectedProvider } from "thirdweb/wallets";
 import { useSwitchActiveWalletChain } from "thirdweb/react";
+import { client, marketplaceContract, nftContract } from "@/app/utils/contractInteraction";
+import { NFTMetadata, getGalleryData } from "@/app/utils/contractInteraction";
 
 import Link from "next/link";
-const client = createThirdwebClient({
-	clientId: THIRD_WEB_CLIENT_ID,
-});
 
 interface GalleryProps {
 	showAll?: boolean; // If true show all NFTs in collection, if false show NFTs owned by that user
-}
-
-interface NFTMetadata {
-	id: bigint;
-	price?: string;
-	image?: string;
-	name?: string;
-	animation_url?: string;
-	description?: string;
 }
 
 const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
@@ -49,18 +38,6 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [activeAddress, setactiveAddress] = useState<string>("");
 	const [isOnwer, setIsOwner] = useState<boolean>(false);
 
-	const nftContract = getContract({
-		client,
-		address: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
-		chain: sepolia,
-	});
-
-	const marketplaceContract = getContract({
-		client,
-		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
-		chain: sepolia,
-	});
-
 	const { data: marketplaceNftCount } = useReadContract(totalListings, { contract: marketplaceContract });
 
 	const { data: marketplaceNfts } = useReadContract(getAllListings, {
@@ -75,52 +52,16 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 		count: 42, // Can hardcode this for now as we know there are only 42 NFTs
 	});
 
-	interface NFTMetadata {
-		id: number;
-		price?: string;
-		token?: string;
-		image?: string;
-		name?: string;
-		animation_url?: string;
-		description?: string;
-		forSale: boolean;
-	}
-
 	useEffect(() => {
-		if (mainNFTs && marketplaceNfts && showAll) {
-			console.log("marketplaceNfts", marketplaceNfts);
+		const loadGalleryData = async () => {
+			console.log("Loading gallery data");
+			const galleryNfts = await getGalleryData();
 
-			// Sort mainNFTs by ID
-			mainNFTs.sort((a, b) => (a.id > b.id ? 1 : -1));
-
-			// Filter marketplaceNfts to only show active listings
-			const activeNfts = marketplaceNfts.filter((nft) => nft.status === "ACTIVE");
-			const metadataBuilder: NFTMetadata[] = [];
-
-			for (let i = 0; i < mainNFTs.length; i++) {
-				// Check if the NFT is for sale, by searching in marketplaceNfts
-				// Such that idNumber is marketplaceNfts.asset.id
-				const marketplaceIndex = activeNfts.findIndex((nft) => nft.asset.id === mainNFTs[i].id);
-				const idNumber = Number(mainNFTs[i].id.toString());
-
-				console.log({ marketplaceIndex, idNumber });
-
-				const metadata: NFTMetadata = {
-					...mainNFTs[i].metadata,
-					id: idNumber,
-					price: marketplaceIndex !== -1 ? marketplaceNfts[i].currencyValuePerToken.displayValue : "",
-					token: marketplaceIndex !== -1 ? marketplaceNfts[i].currencyValuePerToken.symbol : "",
-					forSale: marketplaceIndex !== -1,
-				};
-				metadataBuilder.push(metadata);
-			}
-			console.log({ metadataBuilder });
-			metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
-
-			setAllNftMetadata(metadataBuilder);
-			setPlaceHolderCount(metadataBuilder.length);
-		}
-	}, [mainNFTs, marketplaceNfts]);
+			setAllNftMetadata(galleryNfts);
+			setPlaceHolderCount(galleryNfts.length);
+		};
+		loadGalleryData();
+	}, []);
 
 	const doConnect = async () => {
 		setTxActive(true);

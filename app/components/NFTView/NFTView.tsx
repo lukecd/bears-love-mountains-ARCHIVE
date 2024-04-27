@@ -6,7 +6,9 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { sepolia } from "thirdweb/chains";
 import { MediaRenderer, useReadContract, useActiveWalletChain } from "thirdweb/react";
-import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
+import { readContract, resolveMethod } from "thirdweb";
+import { prepareContractCall, getContract, toWei } from "thirdweb";
+
 import {
 	totalListings,
 	getListing,
@@ -16,28 +18,24 @@ import {
 	approveBuyerForListing,
 	getAllListings,
 } from "thirdweb/extensions/marketplace";
+import { sendAndConfirmTransaction } from "thirdweb";
 
-import { ownerOf, approve } from "thirdweb/extensions/erc721";
+import { getNFT, getNFTs, ownerOf, approve, isApprovedForAll } from "thirdweb/extensions/erc721";
 import { BaseTransactionOptions } from "thirdweb";
 import { CreateListingParams } from "thirdweb/extensions/marketplace";
 import { useActiveWallet } from "thirdweb/react";
 import { useActiveAccount } from "thirdweb/react";
-import { prepareContractCall, getContract, toWei } from "thirdweb";
 import { useSendTransaction } from "thirdweb/react";
-import { getNFT } from "thirdweb/extensions/erc721";
-
 import { useWaitForReceipt } from "thirdweb/react";
 import { useSwitchActiveWalletChain } from "thirdweb/react";
-import { createThirdwebClient } from "thirdweb";
 import { useConnect, useDisconnect } from "thirdweb/react";
 import { waitForReceipt } from "thirdweb";
 
 import { ThirdwebProvider, ConnectButton, TransactionButton, darkTheme } from "thirdweb/react";
 import { createWallet, walletConnect, inAppWallet, injectedProvider } from "thirdweb/wallets";
 import Link from "next/link";
-const client = createThirdwebClient({
-	clientId: THIRD_WEB_CLIENT_ID,
-});
+
+import { client, marketplaceContract, nftContract } from "@/app/utils/contractInteraction";
 
 type ResponsiveProps = {
 	client: any;
@@ -93,18 +91,6 @@ interface NFTMetadata {
 }
 
 const NFTView: React.FC<NFTViewProps> = ({ id }) => {
-	const marketplaceContract = getContract({
-		client,
-		address: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
-		chain: sepolia,
-	});
-
-	const nftContract = getContract({
-		client,
-		address: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
-		chain: sepolia,
-	});
-
 	const { mutate: sendTransaction, isPending: sendTxPending, data: txResult } = useSendTransaction();
 	const [nftMetadata, setNftMetadata] = useState<NFTMetadata | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -121,7 +107,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	const [showSellOverlay, setSellShowOverlay] = useState(false);
 	const [isOwner, setIsOwner] = useState<boolean>(false);
 	const [isApproved, setIsApproved] = useState<boolean>(false);
-
+	const [listingPrice, setListingPrice] = useState<string>("0");
 	// Used to fade in and out the "in progress" overlay
 	useEffect(() => {
 		if (txActive) {
@@ -138,6 +124,19 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	useEffect(() => {
 		if (activeAccount) {
 			setIsOwner(activeAccount.address === nftMetadata?.owner);
+
+			// Now check if the owner has approved the marketplace contract
+			const checkApproval = async () => {
+				console.log("Checking approval");
+				const checkApproval = await readContract({
+					contract: nftContract,
+					method: resolveMethod("getApproved"),
+					params: [id],
+				});
+				//@ts-ignore
+				setIsApproved(checkApproval === process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!);
+			};
+			checkApproval();
 		}
 	}, [activeAccount]);
 
@@ -179,19 +178,32 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 			const allListings = await getAllListings({ contract: marketplaceContract });
 			const activeListings = allListings.filter((nft) => nft.status === "ACTIVE");
 
-			// // Sort allListings by ID
-			// allListings.sort((a, b) => (a.asset.id > b.asset.id ? 1 : -1));
+			// Sort allListings by ID
+			// activeListings.sort((a, b) => (a.asset.id > b.asset.id ? 1 : -1));
 
-			// Find the index of the NFT in the marketplace listings
-			const marketplaceIndex = activeListings.findIndex((nft) => nft.asset.id === bigId);
-			console.log({ marketplaceIndex });
+			// Search through listings to see if this NFT is for sale
+			let marketplaceIndex = -1;
+			let price = "";
+			let token = "";
+			for (let i = 0; i < activeListings.length; i++) {
+				const nftId = activeListings[i].asset.id;
+				// If for sale, record the price and token
+				if (nftId === bigId) {
+					marketplaceIndex = i;
+					price = activeListings[i].currencyValuePerToken.displayValue;
+					token = activeListings[i].currencyValuePerToken.symbol;
+					console.log(activeListings[i]);
+					break;
+				}
+			}
+
 			const idNumber = Number(nft.id.toString());
 			const metadata: NFTMetadata = {
 				...nft.metadata,
 				id: idNumber,
 				owner: ownerWallet,
-				price: marketplaceIndex !== -1 ? allListings[marketplaceIndex].currencyValuePerToken.displayValue : "",
-				token: marketplaceIndex !== -1 ? allListings[marketplaceIndex].currencyValuePerToken.symbol : "",
+				price,
+				token,
 				forSale: marketplaceIndex !== -1,
 			};
 			console.log({ metadata });
@@ -222,7 +234,6 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	// Show the for sale overlay with fading effect
 	const setupSell = async () => {
 		setSellShowOverlay(true);
-		console.log("Setting up sell");
 	};
 
 	// Hide the for sale overlay with fading effect
@@ -232,26 +243,29 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	const doCreateListing = async () => {
 		if (nftMetadata) {
-			console.log("Creating listing for", nftMetadata.id);
 			setTxActive(true);
-			const futureDate = new Date();
-			futureDate.setFullYear(futureDate.getFullYear() + 10);
-
-			const options: BaseTransactionOptions<CreateListingParams> = {
-				contract: marketplaceContract,
-				assetContractAddress: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
-				tokenId: BigInt(nftMetadata.id),
-				quantity: BigInt(1),
-				pricePerToken: "0.001", // Ether value, adjust for actual usage
-				startTimestamp: new Date(),
-				endTimestamp: new Date(new Date().setFullYear(new Date().getFullYear() + 10)),
-				isReservedListing: true,
-			};
 
 			try {
-				const listingTx = await createListing(options);
-				console.log("Listing transaction", listingTx);
-				await sendTransaction(listingTx);
+				console.log("Creating listing");
+
+				const params = {
+					assetContract: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
+					tokenId: BigInt(nftMetadata.id),
+					quantity: BigInt(1),
+					currency: process.env.NEXT_PUBLIC_CURRENCY_CONTRACT_ADDRESS!,
+					pricePerToken: toWei(listingPrice),
+					startTimestamp: new Date(Date.now()),
+					endTimestamp: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+					reserved: false,
+				};
+
+				const listingTx = prepareContractCall({
+					contract: marketplaceContract,
+					method: resolveMethod("createListing"),
+					params: [params],
+				});
+
+				const sendListingTx = await sendTransaction(listingTx);
 			} catch (error) {
 				console.error("Failed to create listing:", error);
 			}
@@ -308,6 +322,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		console.log("Approval", approval);
 
 		const tx = await sendTransaction(approval);
+		setIsApproved(true);
 		console.log("tx", tx);
 	};
 
@@ -356,7 +371,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 								)}
 							</div>
 
-							<div className="w-1/2 mt-10">
+							<div className="w-full md:w-1/2 mt-10">
 								<div className="rounded-lg shadow-xl shadow-shadow bg-accent bg-opacity-50 px-5 py-5 shadow-accent ml-3 mr-3 md:ml-0 md:mr-0">
 									<h1 className="text-2xl text-black text-left">Bears Love Mountains #{nftMetadata.id}</h1>
 									<h1 className="text-xl text-black text-left">
@@ -383,6 +398,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 														type="number"
 														className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 border-gray-300 rounded-md"
 														placeholder="0.00"
+														onChange={(e) => setListingPrice(e.target.value)}
 													/>
 													<div className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
 														{nftMetadata?.token}
@@ -397,14 +413,14 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 													Approve Access
 												</button>
 											)}
-											<button
-												className={`mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent ${
-													!isApproved ? "opacity-50 cursor-not-allowed" : ""
-												}`}
-												disabled={!isApproved}
-											>
-												List for Sale
-											</button>
+											{isApproved && (
+												<button
+													className="mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent"
+													onClick={doCreateListing}
+												>
+													List for Sale
+												</button>
+											)}
 											<button
 												onClick={doCancel}
 												className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonAccent hover:buttonBg transition-shadow duration-300 ease-in-out shadow-xl text-white"

@@ -1,3 +1,0 @@
-const THIRD_WEB_CLIENT_ID = "fb0a78890cb1c88d8fb9801a1f0df70f";
-
-export { THIRD_WEB_CLIENT_ID };
