@@ -80,6 +80,7 @@ type NFTViewProps = {
 
 interface NFTMetadata {
 	id: number;
+	listingId?: bigint; // Only present if the NFT is listed for sale
 	owner?: string;
 	price?: string;
 	token?: string;
@@ -108,6 +109,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	const [isOwner, setIsOwner] = useState<boolean>(false);
 	const [isApproved, setIsApproved] = useState<boolean>(false);
 	const [listingPrice, setListingPrice] = useState<string>("0");
+
 	// Used to fade in and out the "in progress" overlay
 	useEffect(() => {
 		if (txActive) {
@@ -124,21 +126,21 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	useEffect(() => {
 		if (activeAccount) {
 			setIsOwner(activeAccount.address === nftMetadata?.owner);
-
-			// Now check if the owner has approved the marketplace contract
-			const checkApproval = async () => {
-				console.log("Checking approval");
-				const checkApproval = await readContract({
-					contract: nftContract,
-					method: resolveMethod("getApproved"),
-					params: [id],
-				});
-				//@ts-ignore
-				setIsApproved(checkApproval === process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!);
-			};
 			checkApproval();
 		}
 	}, [activeAccount]);
+
+	// Check if the owner has approved the marketplace contract
+	const checkApproval = async () => {
+		console.log("Checking approval");
+		const checkApproval = await readContract({
+			contract: nftContract,
+			method: resolveMethod("getApproved"),
+			params: [id],
+		});
+
+		setIsApproved(checkApproval.toString() === process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!);
+	};
 
 	// This is called when we have a tx hash, we then wait for the receipt
 	useEffect(() => {
@@ -154,8 +156,11 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 					transactionHash: txResult?.transactionHash!,
 				});
 				console.log("receipt", receipt);
-				// Set nfMetadata to not for sale
-				setNftMetadata({ ...nftMetadata!, forSale: false });
+				// // Set nfMetadata to not for sale
+				// setNftMetadata({ ...nftMetadata!, forSale: false });
+
+				// Load the NFT data again
+				await loadNFTdata();
 				setTxActive(false);
 			};
 			doGetReceipt();
@@ -163,72 +168,80 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	}, [sendTxPending, txResult]);
 
 	useEffect(() => {
-		const loadNFTdata = async () => {
-			setIsLoading(true);
-			const bigId = BigInt(parseInt(id));
-
-			// 1: get ownership & approval details from NFT contract
-			const ownerWallet = await ownerOf({ contract: nftContract, tokenId: bigId });
-
-			// 2: get NFT details from the NFT contract
-			const nft = await getNFT({ contract: nftContract, tokenId: bigId });
-
-			// 3: get the listing details from the marketplace contract
-			// I wish there was a way to query the marketplace contract for a specific NFT
-			const allListings = await getAllListings({ contract: marketplaceContract });
-			const activeListings = allListings.filter((nft) => nft.status === "ACTIVE");
-
-			// Sort allListings by ID
-			// activeListings.sort((a, b) => (a.asset.id > b.asset.id ? 1 : -1));
-
-			// Search through listings to see if this NFT is for sale
-			let marketplaceIndex = -1;
-			let price = "";
-			let token = "";
-			for (let i = 0; i < activeListings.length; i++) {
-				const nftId = activeListings[i].asset.id;
-				// If for sale, record the price and token
-				if (nftId === bigId) {
-					marketplaceIndex = i;
-					price = activeListings[i].currencyValuePerToken.displayValue;
-					token = activeListings[i].currencyValuePerToken.symbol;
-					console.log(activeListings[i]);
-					break;
-				}
-			}
-
-			const idNumber = Number(nft.id.toString());
-			const metadata: NFTMetadata = {
-				...nft.metadata,
-				id: idNumber,
-				owner: ownerWallet,
-				price,
-				token,
-				forSale: marketplaceIndex !== -1,
-			};
-			console.log({ metadata });
-			setNftMetadata(metadata);
-			setIsLoading(false);
-		};
 		loadNFTdata();
 	}, []);
+
+	const loadNFTdata = async () => {
+		setIsLoading(true);
+		const bigId = BigInt(parseInt(id));
+
+		// 1: get ownership & approval details from NFT contract
+		const ownerWallet = await ownerOf({ contract: nftContract, tokenId: bigId });
+
+		// 2: get NFT details from the NFT contract
+		const nft = await getNFT({ contract: nftContract, tokenId: bigId });
+		setIsOwner(ownerWallet === activeAccount?.address);
+
+		// 3: get the listing details from the marketplace contract
+		// I wish there was a way to query the marketplace contract for a specific NFT
+		const allListings = await getAllListings({ contract: marketplaceContract });
+		const activeListings = allListings.filter((nft) => nft.status === "ACTIVE");
+
+		// Search through listings to see if this NFT is for sale
+		let marketplaceIndex = -1;
+		let price = "";
+		let token = "";
+		let listingId = BigInt(-1);
+		for (let i = 0; i < activeListings.length; i++) {
+			const nftId = activeListings[i].asset.id;
+			// If for sale, record the price and token
+			if (nftId === bigId) {
+				marketplaceIndex = i;
+				listingId = activeListings[i].id;
+				price = activeListings[i].currencyValuePerToken.displayValue;
+				token = activeListings[i].currencyValuePerToken.symbol;
+				console.log(activeListings[i]);
+				break;
+			}
+		}
+
+		const idNumber = Number(nft.id.toString());
+		const metadata: NFTMetadata = {
+			...nft.metadata,
+			id: idNumber,
+			owner: ownerWallet,
+			listingId,
+			price,
+			token,
+			forSale: marketplaceIndex !== -1,
+		};
+
+		await checkApproval();
+
+		setNftMetadata(metadata);
+		setIsLoading(false);
+	};
+
+	const doCancelListing = async () => {};
 
 	// Called when the user clicks Buy Now
 	const doBuyNow = async () => {
 		// Start the "in progress" spinner
-		setTxActive(true);
+		if (nftMetadata) {
+			setTxActive(true);
 
-		console.log("Preparing buy transaction");
-		const buyTx = await buyFromListing({
-			contract: marketplaceContract,
-			listingId: BigInt(parseInt(id) + 1),
-			quantity: BigInt(1),
-			recipient: activeAccount?.address!,
-		});
-		console.log("Sending buy transaction");
-		await sendTransaction(buyTx);
+			console.log("buying listingId id=", nftMetadata?.listingId);
+			const buyTx = await buyFromListing({
+				contract: marketplaceContract,
+				listingId: nftMetadata.listingId!,
+				quantity: BigInt(1),
+				recipient: activeAccount?.address!,
+			});
+			console.log("Sending buy transaction buyTx=	", buyTx);
+			await sendTransaction(buyTx);
 
-		// Note we don't wait for tx to complete here
+			// Note we don't wait for receipt to complete here
+		}
 	};
 
 	// Show the for sale overlay with fading effect
@@ -241,12 +254,48 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		setSellShowOverlay(false);
 	};
 
+	const doCreateListingExtension = async () => {
+		if (nftMetadata) {
+			console.log("Creating listing with extension for", nftMetadata.id);
+			setTxActive(true);
+
+			const options: BaseTransactionOptions<CreateListingParams> = {
+				contract: marketplaceContract,
+				assetContractAddress: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
+				tokenId: BigInt(nftMetadata.id),
+				quantity: BigInt(1),
+				pricePerToken: listingPrice,
+				startTimestamp: new Date(),
+				endTimestamp: new Date(new Date().setFullYear(new Date().getFullYear() + 10)),
+				isReservedListing: false,
+			};
+
+			try {
+				const listingTx = await createListing(options);
+				console.log("Listing transaction", listingTx);
+				await sendTransaction(listingTx);
+			} catch (error) {
+				console.error("Failed to create listing:", error);
+			}
+		}
+	};
+
 	const doCreateListing = async () => {
 		if (nftMetadata) {
+			console.log("Creating listing for", nftMetadata.id);
+			console.log("setting tx active to true");
 			setTxActive(true);
 
 			try {
-				console.log("Creating listing");
+				const currentTime: Date = new Date();
+
+				// UNIX timestamp for 5 minutes ago in seconds
+				const fiveMinutesAgo: number = Math.floor(currentTime.getTime() / 1000) - 5 * 60;
+
+				// UNIX timestamp for next year in seconds
+				const nextYear: Date = new Date();
+				nextYear.setFullYear(nextYear.getFullYear() + 1);
+				const nextYearTimestamp: number = Math.floor(nextYear.getTime() / 1000);
 
 				const params = {
 					assetContract: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
@@ -254,8 +303,8 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 					quantity: BigInt(1),
 					currency: process.env.NEXT_PUBLIC_CURRENCY_CONTRACT_ADDRESS!,
 					pricePerToken: toWei(listingPrice),
-					startTimestamp: new Date(Date.now()),
-					endTimestamp: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+					startTimestamp: fiveMinutesAgo,
+					endTimestamp: nextYearTimestamp,
 					reserved: false,
 				};
 
@@ -266,6 +315,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 				});
 
 				const sendListingTx = await sendTransaction(listingTx);
+				setSellShowOverlay(false);
 			} catch (error) {
 				console.error("Failed to create listing:", error);
 			}
@@ -345,7 +395,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	return (
 		// Create a flexbox div with a background image
-		<div className="flex flex-row w-full h-full bg-bg mt-[100px] mb-[70px] md:mb-[1px]">
+		<div className="flex flex-row w-full h-full bg-bg mt-[100px] ">
 			<div className="flex flex-row md:justify-center items-center w-full md:gap-x-4">
 				{nftMetadata && (
 					<>
@@ -384,73 +434,104 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 									<h2 className="text-sm text-black text-left">
 										Owner:{" "}
 										<Link className="underline decoration-buttonAccent" href={`/myNFTs/${nftMetadata.owner}`}>
-											{`${nftMetadata.owner?.slice(0, 5)}...${nftMetadata.owner?.slice(-5)}`}
+											{activeAccount && isOwner
+												? "YOU"
+												: `${nftMetadata.owner?.slice(0, 5)}...${nftMetadata.owner?.slice(-5)}`}
 										</Link>
 									</h2>
 								</div>
-								{showSellOverlay && (
-									<div className="bg-bg self-start p-5 rounded-lg shadow-xl shadow-buttonAccent flex flex-col justify-start mt-5">
-										<div className="">
-											<div>
-												<label className="block font-medium text-text">Price</label>
-												<div className="mt-1 relative rounded-md shadow-sm">
-													<input
-														type="number"
-														className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 border-gray-300 rounded-md"
-														placeholder="0.00"
-														onChange={(e) => setListingPrice(e.target.value)}
-													/>
-													<div className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
-														{nftMetadata?.token}
-													</div>
+								{activeAccount && (
+									<>
+										{showSellOverlay && (
+											<div className="bg-bg self-start p-5 rounded-lg shadow-xl shadow-buttonAccent flex flex-col justify-start mt-5">
+												<div className="">
+													{!isApproved && (
+														<button
+															className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-500 ease-in-out shadow-xl text-buttonText"
+															onClick={doApproveAccess}
+														>
+															Approve Access
+														</button>
+													)}
+													{isApproved && (
+														<>
+															<div>
+																<label className="block font-medium text-text">Price</label>
+
+																<div className="mt-1 relative rounded-md shadow-sm">
+																	<input
+																		type="number"
+																		className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 border-gray-300 rounded-md"
+																		placeholder="0.00"
+																		onChange={(e) => setListingPrice(e.target.value)}
+																	/>
+																	<div className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
+																		{nftMetadata?.token}
+																	</div>
+																</div>
+															</div>
+
+															<button
+																className="mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent"
+																onClick={doCreateListing}
+															>
+																List For Sale
+															</button>
+														</>
+													)}
+													<button
+														onClick={doCancel}
+														className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonAccent hover:buttonBg transition-shadow duration-300 ease-in-out shadow-xl text-white"
+													>
+														Cancel
+													</button>
 												</div>
 											</div>
-											{!isApproved && (
-												<button
-													className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonBg hover:bg-buttonAccent transition-shadow duration-500 ease-in-out shadow-xl text-buttonText"
-													onClick={doApproveAccess}
-												>
-													Approve Access
-												</button>
-											)}
-											{isApproved && (
+										)}
+										{!showSellOverlay && isOwner && nftMetadata.forSale && (
+											<div className="button-container flex flex-col items-center space-y-4">
+												{/* I own it, it's listed for sale, offer option to cancel listing */}
 												<button
 													className="mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent"
-													onClick={doCreateListing}
+													onClick={doCancelListing}
 												>
-													List for Sale
+													<span className="text-xl">Cancel Listing</span>
 												</button>
-											)}
-											<button
-												onClick={doCancel}
-												className="mt-3 h-12 border-2 p-2.5 rounded-full font-bold w-full bg-buttonAccent hover:buttonBg transition-shadow duration-300 ease-in-out shadow-xl text-white"
-											>
-												Cancel
-											</button>
-										</div>
-									</div>
+											</div>
+										)}
+										{!showSellOverlay && isOwner && !nftMetadata.forSale && (
+											<div className="button-container flex flex-col items-center space-y-4">
+												{/* I own it, it's NOT listed for sale, offer option to list for sale */}
+												<button
+													className="mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent"
+													onClick={setupSell}
+												>
+													<span className="text-xl">List For Sale</span>
+												</button>
+											</div>
+										)}
+										{!showSellOverlay && !isOwner && nftMetadata.forSale && (
+											<div className="button-container flex flex-col items-center space-y-4">
+												{/* I own it, it's NOT listed for sale, offer option to list for sale */}
+												<button
+													className="mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent"
+													onClick={doBuyNow}
+												>
+													<span className="text-xl">Buy Now</span>
+												</button>
+											</div>
+										)}
+									</>
 								)}
-								{!showSellOverlay && (
-									<div className="button-container flex flex-col items-center space-y-4">
-										{/* Button for listing for sale or buying */}
-										<button
-											className={`mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent ${
-												!activeAccount ? "opacity-50 cursor-not-allowed" : ""
-											}`}
-											onClick={!nftMetadata.forSale ? setupSell : doBuyNow}
-											disabled={!activeAccount}
-										>
-											<span className="text-xl">{!nftMetadata.forSale && isOwner ? "List for sale" : "Buy Now"}</span>
-										</button>
-										{/* Button for connecting or disconnecting the wallet */}
-										<button
-											className="h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent"
-											onClick={activeAccount ? doDisconnect : doConnect}
-										>
-											<span className="text-xl">{activeAccount ? "Disconnect wallet" : "Connect wallet"}</span>
-										</button>
-									</div>
-								)}
+								<div className="mt-5button-container flex flex-col items-center space-y-4">
+									{/* Button for connecting or disconnecting the wallet */}
+									<button
+										className="mt-5 h-12 px-10 w-full md:w-[1/2] rounded-full font-bold bg-buttonBg hover:bg-buttonAccent text-buttonText hover:duration-300 ease-in-out shadow-2xl shadow-buttonAccent"
+										onClick={activeAccount ? doDisconnect : doConnect}
+									>
+										<span className="text-xl">{activeAccount ? "Disconnect wallet" : "Connect wallet"}</span>
+									</button>
+								</div>
 							</div>
 						</div>
 					</>

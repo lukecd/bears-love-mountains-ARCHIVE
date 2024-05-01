@@ -38,20 +38,6 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [activeAddress, setactiveAddress] = useState<string>("");
 	const [isOnwer, setIsOwner] = useState<boolean>(false);
 
-	const { data: marketplaceNftCount } = useReadContract(totalListings, { contract: marketplaceContract });
-
-	const { data: marketplaceNfts } = useReadContract(getAllListings, {
-		contract: marketplaceContract,
-		start: 0,
-		count: marketplaceNftCount,
-	});
-
-	const { data: mainNFTs } = useReadContract(getNFTs, {
-		contract: nftContract,
-		start: 0,
-		count: 42, // Can hardcode this for now as we know there are only 42 NFTs
-	});
-
 	useEffect(() => {
 		const loadGalleryData = async () => {
 			console.log("Loading gallery data");

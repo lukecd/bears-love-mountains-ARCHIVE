@@ -34,7 +34,7 @@ export const getAllNFTs = async () => {
 	const nfts = await getNFTs({
 		contract: nftContract,
 		start: 0,
-		count: process.env.NEXT_PUBLIC_NFT_COUNT!,
+		count: parseInt(process.env.NEXT_PUBLIC_NFT_COUNT!),
 	});
 
 	// Sort NFTs by ID
@@ -57,7 +57,7 @@ export const getMarketplaceNFTs = async () => {
 	// Might need to include
 	const activeNfts = marketplaceNfts.filter((nft) => nft.status === "ACTIVE");
 
-	return marketplaceNfts;
+	return activeNfts;
 };
 
 export const getGalleryData = async (): Promise<NFTMetadata[]> => {
@@ -77,8 +77,8 @@ export const getGalleryData = async (): Promise<NFTMetadata[]> => {
 		const metadata: NFTMetadata = {
 			...mainNfts[i].metadata,
 			id: idNumber,
-			price: marketplaceIndex !== -1 ? marketplaceNfts[i].currencyValuePerToken.displayValue : "",
-			token: marketplaceIndex !== -1 ? marketplaceNfts[i].currencyValuePerToken.symbol : "",
+			price: marketplaceIndex !== -1 ? marketplaceNfts[marketplaceIndex].currencyValuePerToken.displayValue : "",
+			token: marketplaceIndex !== -1 ? marketplaceNfts[marketplaceIndex].currencyValuePerToken.symbol : "",
 			forSale: marketplaceIndex !== -1,
 		};
 		metadataBuilder.push(metadata);

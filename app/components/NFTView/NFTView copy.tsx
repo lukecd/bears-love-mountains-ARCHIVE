@@ -6,7 +6,6 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { sepolia } from "thirdweb/chains";
 import { MediaRenderer, useReadContract, useActiveWalletChain } from "thirdweb/react";
-import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
 import { totalListings, getListing, buyFromListing, createListing } from "thirdweb/extensions/marketplace";
 import { BaseTransactionOptions } from "thirdweb";
 import { CreateListingParams } from "thirdweb/extensions/marketplace";
@@ -25,7 +24,7 @@ import { ThirdwebProvider, ConnectButton, TransactionButton, darkTheme } from "t
 import { createWallet, walletConnect, inAppWallet, injectedProvider } from "thirdweb/wallets";
 
 const client = createThirdwebClient({
-	clientId: THIRD_WEB_CLIENT_ID,
+	clientId: "",
 });
 
 type ResponsiveProps = {
