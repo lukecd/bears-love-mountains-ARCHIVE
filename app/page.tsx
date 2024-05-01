@@ -3,7 +3,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 
 import Gallery from "./components/Gallery";
-import Hero3 from "./components/Hero3";
+import Hero from "./components/Hero";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ThirdwebProvider } from "thirdweb/react";
 import { sepolia } from "thirdweb/chains";
@@ -16,7 +16,7 @@ export default function Home() {
 		<main className="flex flex-col items-center justify-center min-h-screen">
 			<ThirdwebProvider>
 				<QueryClientProvider client={queryClient}>
-					<Hero3 navbarMode={false} />
+					<Hero navbarMode={false} />
 					<Gallery showAll={true} />
 					<Footer />
 				</QueryClientProvider>

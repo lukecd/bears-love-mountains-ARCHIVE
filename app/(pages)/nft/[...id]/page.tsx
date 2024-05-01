@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import Hero3 from "@/app/components/Hero3";
+import Hero from "@/app/components/Hero";
 import Navbar from "@/app/components/Navbar";
 import NFTView from "@/app/components/NFTView";
 import { useRouter } from "next/navigation";
