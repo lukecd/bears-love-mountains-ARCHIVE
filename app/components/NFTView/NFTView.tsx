@@ -17,6 +17,7 @@ import {
 	isBuyerApprovedForListing,
 	approveBuyerForListing,
 	getAllListings,
+	cancelListing,
 } from "thirdweb/extensions/marketplace";
 import { sendAndConfirmTransaction } from "thirdweb";
 
@@ -110,6 +111,11 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	const [isApproved, setIsApproved] = useState<boolean>(false);
 	const [listingPrice, setListingPrice] = useState<string>("0");
 
+	// Called on page load to fetch NFT data
+	useEffect(() => {
+		loadNFTdata();
+	}, []);
+
 	// Used to fade in and out the "in progress" overlay
 	useEffect(() => {
 		if (txActive) {
@@ -132,7 +138,6 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	// Check if the owner has approved the marketplace contract
 	const checkApproval = async () => {
-		console.log("Checking approval");
 		const checkApproval = await readContract({
 			contract: nftContract,
 			method: resolveMethod("getApproved"),
@@ -141,35 +146,6 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 		setIsApproved(checkApproval.toString() === process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!);
 	};
-
-	// This is called when we have a tx hash, we then wait for the receipt
-	useEffect(() => {
-		console.log("sendTxPending", sendTxPending);
-		console.log("txResult", txResult?.transactionHash);
-		if (txResult) {
-			const doGetReceipt = async () => {
-				console.log("waiting for receipt");
-
-				const receipt = await waitForReceipt({
-					client,
-					chain: sepolia,
-					transactionHash: txResult?.transactionHash!,
-				});
-				console.log("receipt", receipt);
-				// // Set nfMetadata to not for sale
-				// setNftMetadata({ ...nftMetadata!, forSale: false });
-
-				// Load the NFT data again
-				await loadNFTdata();
-				setTxActive(false);
-			};
-			doGetReceipt();
-		}
-	}, [sendTxPending, txResult]);
-
-	useEffect(() => {
-		loadNFTdata();
-	}, []);
 
 	const loadNFTdata = async () => {
 		setIsLoading(true);
@@ -200,7 +176,6 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 				listingId = activeListings[i].id;
 				price = activeListings[i].currencyValuePerToken.displayValue;
 				token = activeListings[i].currencyValuePerToken.symbol;
-				console.log(activeListings[i]);
 				break;
 			}
 		}
@@ -222,25 +197,37 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		setIsLoading(false);
 	};
 
-	const doCancelListing = async () => {};
+	const doCancelListing = async () => {
+		if (nftMetadata && activeAccount) {
+			setTxActive(true);
+
+			const transaction = await cancelListing({
+				contract: marketplaceContract,
+				listingId: nftMetadata.listingId!,
+			});
+			await sendAndConfirmTransaction({ account: activeAccount, transaction });
+
+			await loadNFTdata();
+			setTxActive(false);
+		}
+	};
 
 	// Called when the user clicks Buy Now
 	const doBuyNow = async () => {
 		// Start the "in progress" spinner
-		if (nftMetadata) {
+		if (nftMetadata && activeAccount) {
 			setTxActive(true);
 
-			console.log("buying listingId id=", nftMetadata?.listingId);
-			const buyTx = await buyFromListing({
+			const transaction = await buyFromListing({
 				contract: marketplaceContract,
 				listingId: nftMetadata.listingId!,
 				quantity: BigInt(1),
 				recipient: activeAccount?.address!,
 			});
-			console.log("Sending buy transaction buyTx=	", buyTx);
-			await sendTransaction(buyTx);
+			await sendAndConfirmTransaction({ account: activeAccount, transaction });
 
-			// Note we don't wait for receipt to complete here
+			await loadNFTdata();
+			setTxActive(false);
 		}
 	};
 
@@ -254,42 +241,16 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		setSellShowOverlay(false);
 	};
 
-	const doCreateListingExtension = async () => {
-		if (nftMetadata) {
-			console.log("Creating listing with extension for", nftMetadata.id);
-			setTxActive(true);
-
-			const options: BaseTransactionOptions<CreateListingParams> = {
-				contract: marketplaceContract,
-				assetContractAddress: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
-				tokenId: BigInt(nftMetadata.id),
-				quantity: BigInt(1),
-				pricePerToken: listingPrice,
-				startTimestamp: new Date(),
-				endTimestamp: new Date(new Date().setFullYear(new Date().getFullYear() + 10)),
-				isReservedListing: false,
-			};
-
-			try {
-				const listingTx = await createListing(options);
-				console.log("Listing transaction", listingTx);
-				await sendTransaction(listingTx);
-			} catch (error) {
-				console.error("Failed to create listing:", error);
-			}
-		}
-	};
-
+	// Creates a new marketplace listing for the NFT
 	const doCreateListing = async () => {
-		if (nftMetadata) {
-			console.log("Creating listing for", nftMetadata.id);
-			console.log("setting tx active to true");
+		if (nftMetadata && activeAccount) {
 			setTxActive(true);
 
 			try {
 				const currentTime: Date = new Date();
 
 				// UNIX timestamp for 5 minutes ago in seconds
+				// Set to 5 min ago to account of issues with block time
 				const fiveMinutesAgo: number = Math.floor(currentTime.getTime() / 1000) - 5 * 60;
 
 				// UNIX timestamp for next year in seconds
@@ -308,13 +269,17 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 					reserved: false,
 				};
 
-				const listingTx = prepareContractCall({
+				const transaction = prepareContractCall({
 					contract: marketplaceContract,
 					method: resolveMethod("createListing"),
 					params: [params],
 				});
 
-				const sendListingTx = await sendTransaction(listingTx);
+				await sendAndConfirmTransaction({ account: activeAccount, transaction });
+
+				// Reload NFT data from contract
+				await loadNFTdata();
+				setTxActive(false);
 				setSellShowOverlay(false);
 			} catch (error) {
 				console.error("Failed to create listing:", error);
@@ -322,9 +287,8 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		}
 	};
 
+	// Connect wallet
 	const doConnect = async () => {
-		console.log("Connecting wallet");
-
 		setTxActive(true);
 		await connect(async () => {
 			const metamask = createWallet("io.metamask");
@@ -353,27 +317,28 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		setTxActive(false);
 	};
 
+	// Disconnect wallet
 	const doDisconnect = async () => {
-		console.log("Disconnecting wallet");
 		if (wallet) {
 			const returnType = await disconnect(wallet);
 		}
 	};
 
-	// approve on NFT contract, then list on marketplace
+	// Approve marketplace to access NFT
+	// Once this is done, we can can list the NFT for sale
 	const doApproveAccess = async () => {
-		setTxActive(true);
-		console.log("Approving access");
-		const approval = await approve({
-			contract: nftContract,
-			to: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
-			tokenId: BigInt(nftMetadata?.id!),
-		});
-		console.log("Approval", approval);
+		if (nftMetadata && activeAccount) {
+			setTxActive(true);
+			const transaction = await approve({
+				contract: nftContract,
+				to: process.env.NEXT_PUBLIC_NFT_MARKETPLACE_CONTRACT!,
+				tokenId: BigInt(nftMetadata?.id!),
+			});
 
-		const tx = await sendTransaction(approval);
-		setIsApproved(true);
-		console.log("tx", tx);
+			const tx = await sendAndConfirmTransaction({ account: activeAccount, transaction });
+			setIsApproved(true);
+			setTxActive(false);
+		}
 	};
 
 	if (isLoading) {
@@ -542,3 +507,33 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 };
 
 export default NFTView;
+
+// const doCreateListingExtension = async () => {
+// 	if (nftMetadata && activeAccount) {
+// 		console.log("Creating listing with extension for", nftMetadata.id);
+// 		setTxActive(true);
+
+// 		const options: BaseTransactionOptions<CreateListingParams> = {
+// 			contract: marketplaceContract,
+// 			assetContractAddress: process.env.NEXT_PUBLIC_NFT_CONTRACT!,
+// 			tokenId: BigInt(nftMetadata.id),
+// 			quantity: BigInt(1),
+// 			pricePerToken: listingPrice,
+// 			startTimestamp: new Date(),
+// 			endTimestamp: new Date(new Date().setFullYear(new Date().getFullYear() + 10)),
+// 			isReservedListing: false,
+// 		};
+
+// 		try {
+// 			const transaction = await createListing(options);
+// 			console.log("Listing transaction", transaction);
+// 			await sendAndConfirmTransaction({ account: activeAccount, transaction });
+
+// 			// Reload NFT data from contract
+// 			await loadNFTdata();
+// 			setTxActive(false);
+// 		} catch (error) {
+// 			console.error("Failed to create listing:", error);
+// 		}
+// 	}
+// };

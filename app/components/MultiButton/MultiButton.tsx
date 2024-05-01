@@ -1,11 +1,7 @@
 import { createThirdwebClient } from "thirdweb";
 import { useConnect } from "thirdweb/react";
 import { createWallet, injectedProvider } from "thirdweb/wallets";
-import { THIRD_WEB_CLIENT_ID } from "../../utils/constants";
-
-const client = createThirdwebClient({
-	clientId: THIRD_WEB_CLIENT_ID,
-});
+import { client } from "../../utils/contractInteraction";
 
 function MultiButton() {
 	const { connect, isConnecting, error } = useConnect();
