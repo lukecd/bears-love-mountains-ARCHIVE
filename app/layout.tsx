@@ -5,6 +5,12 @@ import { Lilita_One } from "next/font/google";
 import "./globals.css";
 
 // const pageFont = Inter({ subsets: ["latin"] });
+
+export const inter = Inter({
+	subsets: ["latin"],
+	display: "swap",
+});
+
 const pageFont = Lilita_One({ subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
