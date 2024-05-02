@@ -15,12 +15,8 @@ const Page = () => {
 	return (
 		<div className="">
 			<Navbar />
-			<div className="flex flex-col min-h-screen mt-15 mb-5 px-10 text-black">
-				<br />
-				<br />
-				<br />
-				<br />
-				<div className="w-full md:w-3/4 text-xl text-end">
+			<div className="flex flex-col  mt-[100px]  mb-5 px-10 text-black">
+				<div className="w-full md:w-3/4 text-xl text-end mt-10">
 					<p className={inter.className}>Original photographs. Shot in Patagonia. </p>
 					<p className={inter.className}>(The mountains, not the clothing brand.)</p>
 					<p className={inter.className}>
@@ -59,9 +55,9 @@ const Page = () => {
 					<br />
 					<p className={inter.className}>
 						But, something changed for me during the Covid lockdowns of 2020, and I found myself pulling away from the
-						noise and people and wanting to be someplace quiet. I{"'"}ve been on a mission since then to find the
-						perfect place to live, which is how I found myself spending the beginning of 2024 in the Patagonia mountains
-						of Chile and Argentina.
+						noise and people. I found myself wanting to be somewhere quiet. I{"'"}ve been on a mission since then to
+						find the perfect place to live, which is how I found myself spending the beginning of 2024 in the Patagonia
+						mountains of Chile and Argentina.
 					</p>
 					<br />
 					<p className={inter.className}>
