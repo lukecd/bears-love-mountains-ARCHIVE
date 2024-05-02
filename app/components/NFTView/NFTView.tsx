@@ -398,7 +398,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 									</h1>
 									<h2 className="text-sm text-black text-left">
 										Owner:{" "}
-										<Link className="underline decoration-buttonAccent" href={`/myNFTs/${nftMetadata.owner}`}>
+										<Link className="underline decoration-buttonAccent" href={`/collection/${nftMetadata.owner}`}>
 											{activeAccount && isOwner
 												? "YOU"
 												: `${nftMetadata.owner?.slice(0, 5)}...${nftMetadata.owner?.slice(-5)}`}

@@ -32,7 +32,7 @@ const Navbar = () => {
 								<Link href="/about" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									About
 								</Link>
-								<Link href="/yourNFTs" className="block px-4 py-2 text-text hover:text-soldTextColor">
+								<Link href="/collection/0x" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									Your NFTs
 								</Link>
 							</div>

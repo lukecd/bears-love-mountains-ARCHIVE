@@ -17,14 +17,16 @@ import { createWallet, walletConnect, inAppWallet, injectedProvider } from "thir
 import { useSwitchActiveWalletChain } from "thirdweb/react";
 import { client, marketplaceContract, nftContract } from "@/app/utils/contractInteraction";
 import { NFTMetadata, getGalleryData } from "@/app/utils/contractInteraction";
+import {} from "thirdweb/react";
 
 import Link from "next/link";
 
 interface GalleryProps {
 	showAll?: boolean; // If true show all NFTs in collection, if false show NFTs owned by that user
+	address?: string; // Address of the user to show NFTs for, if blank and showAll is true, shows NFTs for logged in user
 }
 
-const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
+const Gallery: React.FC<GalleryProps> = ({ showAll, address }) => {
 	const { connect, isConnecting, error } = useConnect();
 	const switchChain = useSwitchActiveWalletChain();
 	const activeChain = useActiveWalletChain();
@@ -35,23 +37,22 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	const [txActive, setTxActive] = useState<boolean>(false);
 	const [overlayOpacity, setOverlayOpacity] = useState(0);
 	const [showOverlay, setShowOverlay] = useState(false);
-	const [activeAddress, setactiveAddress] = useState<string>("");
-	const [isOnwer, setIsOwner] = useState<boolean>(false);
+	const activeAccount = useActiveAccount();
 
 	useEffect(() => {
 		const loadGalleryData = async () => {
-			console.log("Loading gallery data");
-			const galleryNfts = await getGalleryData();
+			console.log({ activeAccount });
+			const galleryNfts = await getGalleryData(address === "0x" ? activeAccount?.address : address);
 
 			setAllNftMetadata(galleryNfts);
 			setPlaceHolderCount(galleryNfts.length);
 		};
 		loadGalleryData();
-	}, []);
+	}, [activeAccount]);
 
 	const doConnect = async () => {
+		console.log("doConnect");
 		setTxActive(true);
-		console.log("Connecting wallet");
 		await connect(async () => {
 			const metamask = createWallet("io.metamask"); // pass the wallet id
 
@@ -67,10 +68,7 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 					walletConnect: { showQrModal: true },
 				});
 			}
-			console.log({ client });
-
-			console.log("metamask", metamask.getAccount());
-			setactiveAddress(metamask.getAccount()?.address!);
+			// setActiveAddress(metamask.getAccount()?.address!);
 			// return the wallet
 			return metamask;
 		});
@@ -82,62 +80,54 @@ const Gallery: React.FC<GalleryProps> = ({ showAll }) => {
 	};
 
 	// Called when activeAddress is set
-	useEffect(() => {
-		// ETH addresses are 42 characters long (with the 0x)
-		if (activeAddress.length === 42) {
-			const doLoad = async () => {
-				const ownedNFTs = await getOwnedNFTs({
-					contract: nftContract,
-					owner: activeAddress!,
-				});
-				console.log({ ownedNFTs });
-				setPlaceHolderCount(ownedNFTs.length);
+	// useEffect(() => {
+	// 	// ETH addresses are 42 characters long (with the 0x)
+	// 	if (activeAddress.length === 42) {
+	// 		const doLoad = async () => {
+	// 			const ownedNFTs = await getOwnedNFTs({
+	// 				contract: nftContract,
+	// 				owner: activeAddress!,
+	// 			});
+	// 			setPlaceHolderCount(ownedNFTs.length);
 
-				const metadataBuilder: NFTMetadata[] = [];
+	// 			const metadataBuilder: NFTMetadata[] = [];
 
-				for (let i = 0; i < ownedNFTs.length; i++) {
-					const idNumber = Number(ownedNFTs[i].id.toString());
-					const price = ownedNFTs[i].metadata.price || "0";
-					const metadata: NFTMetadata = {
-						...ownedNFTs[i].metadata,
-						id: idNumber,
-						price: "NA",
-						token: "NA",
-						forSale: false,
-					};
-					metadataBuilder.push(metadata);
-				}
-				console.log({ metadataBuilder });
-				metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
+	// 			for (let i = 0; i < ownedNFTs.length; i++) {
+	// 				const idNumber = Number(ownedNFTs[i].id.toString());
+	// 				const price = ownedNFTs[i].metadata.price || "0";
+	// 				const metadata: NFTMetadata = {
+	// 					...ownedNFTs[i].metadata,
+	// 					id: idNumber,
+	// 					price: "NA",
+	// 					token: "NA",
+	// 					forSale: false,
+	// 				};
+	// 				metadataBuilder.push(metadata);
+	// 			}
+	// 			metadataBuilder.sort((a, b) => (a.id > b.id ? 1 : -1));
 
-				setAllNftMetadata(metadataBuilder);
-			};
-			doLoad();
-		}
-	}, [setIsOwner]);
+	// 			setAllNftMetadata(metadataBuilder);
+	// 		};
+	// 		doLoad();
+	// 	}
+	// }, [activeAddress]);
 
 	// Confirm re-connect wallet when showing a user's collection
 	useEffect(() => {
-		if (!showAll) doConnect();
+		console.log({ showAll, address });
+		if (!showAll && address === "0x") doConnect();
 	}, []);
 
 	return (
 		<div className="flex flex-wrap flex-col justify-center w-full gap-4 pt-10 pb-30 mb-20 mt-20">
 			<div className="flex flex-col">
-				{activeAddress && <h1 className="text-xl md:text-3xl text-center">BM, {activeAddress}</h1>}
-				{!showAll &&
-					(allNftMetadata.length === 0 ? (
-						<h1 className="text-xl md:text-2xl text-center">
-							Your collection is looking lonely, why not{" "}
-							<Link className="underline decoration-buttonAccent" href="/">
-								go shopping
-							</Link>
-						</h1>
-					) : (
-						<h1 className="text-xl md:text-2xl text-center">Nice collection!</h1>
-					))}
+				{!showAll && address && (
+					<h1 className="text-xl md:text-2xl text-center">
+						NFTs owned by {address === "0x" ? activeAccount?.address : address}
+					</h1>
+				)}
 			</div>
-			<div className="flex flex-wrap flex-row justify-center w-full gap-4 pt-10 pb-30 mb-20 mt-20">
+			<div className="flex flex-wrap flex-row justify-center w-full gap-4 pb-30 mt-5 mb-20">
 				{allNftMetadata.length === 0
 					? Array.from({ length: placeholderCount }, (_, i) => (
 							<div

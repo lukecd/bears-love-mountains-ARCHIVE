@@ -17,20 +17,19 @@ const queryClient = new QueryClient();
 
 type PageProps = {
 	params: {
-		id: string;
+		address: string;
 	};
 };
 
 const Page: React.FC<PageProps> = ({ params }) => {
-	const { id } = params;
+	const { address } = params;
 	const router = useRouter();
-	console.log(id);
 	return (
 		<main className="w-full h-screen">
 			<ThirdwebProvider>
 				<QueryClientProvider client={queryClient}>
 					<Navbar />
-					<Gallery showAll={false} />
+					<Gallery showAll={false} address={address[0]} />
 					<Footer />
 				</QueryClientProvider>
 			</ThirdwebProvider>

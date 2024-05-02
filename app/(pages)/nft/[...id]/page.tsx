@@ -23,7 +23,6 @@ type PageProps = {
 const Page: React.FC<PageProps> = ({ params }) => {
 	const { id } = params;
 	const router = useRouter();
-	console.log(id);
 	return (
 		<main className="w-full h-screen">
 			<ThirdwebProvider>
