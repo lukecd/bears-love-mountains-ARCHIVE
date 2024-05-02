@@ -2,11 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../Navbar";
 
-interface HeroProps {
-	navbarMode: boolean;
-}
-
-const Hero: React.FC<HeroProps> = ({ navbarMode }) => {
+const Hero: React.FC = () => {
 	const refContainer = useRef<HTMLDivElement>(null);
 	const [isSticky, setIsSticky] = useState(false);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,13 +29,6 @@ const Hero: React.FC<HeroProps> = ({ navbarMode }) => {
 			}
 		}
 	};
-
-	useEffect(() => {
-		setIsSticky(navbarMode);
-		window.addEventListener("scroll", handleScroll);
-
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
 
 	return (
 		<>

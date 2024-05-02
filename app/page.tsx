@@ -16,7 +16,7 @@ export default function Home() {
 		<main className="flex flex-col items-center justify-center min-h-screen">
 			<ThirdwebProvider>
 				<QueryClientProvider client={queryClient}>
-					<Hero navbarMode={false} />
+					<Hero />
 					<Gallery showAll={true} />
 					<Footer />
 				</QueryClientProvider>

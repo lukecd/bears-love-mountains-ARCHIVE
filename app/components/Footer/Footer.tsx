@@ -1,5 +1,5 @@
 import React from "react";
-
+import Image from "next/image";
 const Footer: React.FC = () => {
 	return (
 		<div className="bg-footerBg text-buttonAccent w-full relative z-20">
@@ -11,15 +11,15 @@ const Footer: React.FC = () => {
 				</div>
 				<div className="mt-4 lg:mt-0 flex flex-col items-start text-sm text-bg">
 					<a href="https://twitter.com/spaceagente" className="flex items-start">
-						<img src="/hero/mountains/planet-10.png" alt="Bullet" className="w-6 h-6" />
+						<Image src="/hero/mountains/planet-10.png" alt="Bullet" width={24} height={24} />
 						@spaceagente
 					</a>
 					<a href="https://twitter.com/bearsmountains" className="flex items-start">
-						<img src="/hero/mountains/planet-10.png" alt="Bullet" className="w-6 h-6" />
+						<Image src="/hero/mountains/planet-10.png" alt="Bullet" width={24} height={24} />
 						@bearsmountains
 					</a>
 					<a href="https://github.com/lukecd/bears-love-mountains" className="flex items-start">
-						<img src="/hero/mountains/planet-10.png" alt="Bullet" className="w-6 h-6" />
+						<Image src="/hero/mountains/planet-10.png" alt="Bullet" width={24} height={24} />
 						lukecd/bears-love-mountains
 					</a>
 				</div>

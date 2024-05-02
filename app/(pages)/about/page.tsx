@@ -6,10 +6,11 @@ import Navbar from "@/app/components/Navbar";
 import { Inter } from "next/font/google";
 import Footer from "@/app/components/Footer";
 
-export const inter = Inter({
+const inter = Inter({
 	subsets: ["latin"],
 	display: "swap",
 });
+
 const Page = () => {
 	return (
 		<div className="">

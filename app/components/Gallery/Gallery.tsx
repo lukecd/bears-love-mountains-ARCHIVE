@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import NFTsmall from "../NFTsmall";
 import Info from "../Info";
 import { getContract } from "thirdweb";
 import { MediaRenderer, useReadContract, useActiveWalletChain } from "thirdweb/react";
@@ -38,6 +37,11 @@ const Gallery: React.FC<GalleryProps> = ({ showAll, address }) => {
 	const [overlayOpacity, setOverlayOpacity] = useState(0);
 	const [showOverlay, setShowOverlay] = useState(false);
 	const activeAccount = useActiveAccount();
+
+	// Confirm re-connect wallet when showing a user's collection
+	useEffect(() => {
+		if (!showAll && address === "0x") doConnect();
+	}, []);
 
 	useEffect(() => {
 		const loadGalleryData = async () => {
@@ -111,12 +115,6 @@ const Gallery: React.FC<GalleryProps> = ({ showAll, address }) => {
 	// 		doLoad();
 	// 	}
 	// }, [activeAddress]);
-
-	// Confirm re-connect wallet when showing a user's collection
-	useEffect(() => {
-		console.log({ showAll, address });
-		if (!showAll && address === "0x") doConnect();
-	}, []);
 
 	return (
 		<div className="flex flex-wrap flex-col justify-center w-full gap-4 pt-10 pb-30 mb-20 mt-20">
