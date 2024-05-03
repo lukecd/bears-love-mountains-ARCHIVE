@@ -68,7 +68,7 @@ const Page = () => {
 					</p>
 					<br />
 					<p className={inter.className}>
-						As I was photographing the mountains we were working on adding support for the $BERA token at{" "}
+						As I was photographing the mountains, we were working on adding support for the $BERA token at{" "}
 						<Link className="underline decoration-buttonAccent" href="https://www.irys.xyz/">
 							Irys
 						</Link>{" "}
