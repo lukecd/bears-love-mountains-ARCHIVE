@@ -66,6 +66,7 @@ const Page = () => {
 						doors of perception open up and a new world invites me in. These NFTs are my attempt to capture that
 						feeling, they are both a static image and an psychedelic animation rendered realtime using glsl shaders.
 					</p>
+					<br />
 					<p className={inter.className}>
 						As I was photographing the mountains we were working on adding support for the $BERA token at{" "}
 						<Link className="underline decoration-buttonAccent" href="https://www.irys.xyz/">
