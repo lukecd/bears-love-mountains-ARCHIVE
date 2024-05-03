@@ -66,6 +66,14 @@ const Page = () => {
 						doors of perception open up and a new world invites me in. These NFTs are my attempt to capture that
 						feeling, they are both a static image and an psychedelic animation rendered realtime using glsl shaders.
 					</p>
+					<p className={inter.className}>
+						As I was photographing the mountains we were working on adding support for the $BERA token at{" "}
+						<Link className="underline decoration-buttonAccent" href="https://www.irys.xyz/">
+							Irys
+						</Link>{" "}
+						... and you know, bears live in mountains, Berachain, mountains, it all felt like meme ... or maybe I was
+						just stoned. But, here we are.
+					</p>
 					<br />
 					<p className={inter.className}>
 						I designed this website to feel like an art gallery and not a trading platform. The design is sparse and the
