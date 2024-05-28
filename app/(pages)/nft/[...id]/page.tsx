@@ -20,7 +20,7 @@ const Page: React.FC<PageProps> = ({ params }) => {
 	const router = useRouter();
 
 	return (
-		<main className="w-full h-screen">
+		<main className="w-full h-screen ">
 			<Navbar />
 			<NFTView id={id} />
 			<Footer />

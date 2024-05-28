@@ -110,15 +110,25 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	}
 
 	return (
-		<div className="flex flex-row w-full h-full bg-bentoBg mt-[100px]">
+		<div className="flex flex-col w-full h-full bg-bentoBg mt-[100px]">
+			<div className=" text-white flex flex-col justify-center text-center">
+				<p className="text-2xl">NFTs are priced on a bonding curve.</p>
+				<p className="">
+					Burns are taxed 3% {"=>"} which is used to buy{" "}
+					<Link className="underline decoration-bentoColor2" href="/memecoin">
+						meme coins
+					</Link>{" "}
+					{"=>"} which are distributed to NFT holders.
+				</p>
+			</div>
 			<div className="flex flex-row md:justify-center items-center w-full md:gap-x-4">
 				{nftMetadata && (
 					<>
-						<div className="flex flex-col md:flex-row md:gap-4 mt-20 mb-20 md:mt-0 md:self-start">
-							<div className="mt-10">
+						<div className="flex flex-col md:flex-row md:gap-4 mb-20 md:mt-0 md:self-start">
+							<div className="mt-3">
 								<ResponsiveMediaRenderer url={nftMetadata.animation_url} />
 							</div>
-							<div className="w-full md:w-1/2 mt-10">
+							<div className="w-full md:w-1/2 mt-3">
 								<div className="grid grid-rows-6 grid-cols-2 gap-4 h-full">
 									<div className="row-span-2 col-span-2 bg-bentoColor1 flex items-center justify-center text-2xl p-4">
 										<div className="text-center">
