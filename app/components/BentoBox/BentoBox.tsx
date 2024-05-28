@@ -122,14 +122,17 @@ const BentoBox: React.FC = () => {
 				<p className="text-8xl leading-none text-center">Love</p>
 				<p className="text-4xl leading-none text-center"> Mountains</p>
 			</div>
-			<div className="row-span-2 col-span-2 bg-bentoColor2 p-2 relative">
+			<div
+				className="row-span-2 col-span-2 bg-bentoColor3 p-2 text-bentoColor4 transform transition-transform duration-300 hover:scale-105 cursor-pointer flex items-center justify-center text-center"
+				onClick={() => (window.location.href = "/nfts")}
+			>
 				<iframe
 					src="https://gateway.irys.xyz/-DATSC2Lf5uF-Gr4wz1dgEdvEIOEzCZKdsjvf4e-0hY"
 					className="absolute top-0 left-0 w-full h-full border-none"
 				></iframe>
 			</div>
 			<div
-				className="row-span-1 col-span-1 bg-bentoColor3 p-2  text-bentoColor4 transform transition-transform duration-300 hover:scale-105 cursor-pointer flex items-center justify-center text-center"
+				className="row-span-1 col-span-1 bg-bentoColor3 p-2 text-bentoColor4 transform transition-transform duration-300 hover:scale-105 cursor-pointer flex items-center justify-center text-center"
 				onClick={() => (window.location.href = "/nfts")}
 			>
 				<div>
@@ -137,8 +140,15 @@ const BentoBox: React.FC = () => {
 					<p className="text-9xl"> NFTs</p>
 				</div>
 			</div>
-			<div className="row-span-1 col-span-2 bg-bentoColor4 p-2 relative">
-				<canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full"></canvas>
+			<div
+				className="row-span-1 col-span-2 bg-bentoColorbg p-2 relative transform transition-transform duration-300 hover:scale-105 cursor-pointer"
+				onClick={() => (window.location.href = "/nfts")}
+			>
+				<iframe
+					src="https://gateway.irys.xyz/xEsnXgbrRpULvTE7lHnQCUg_JhQOOOvYyCSxhaul6vg"
+					className="absolute top-0 left-0 w-full h-full border-none"
+				></iframe>
+				{/* <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full"></canvas> */}
 			</div>
 			<div
 				className="row-span-1 col-span-1 bg-bentoColor5 p-2 text-5xl transform transition-transform duration-300 hover:scale-105 cursor-pointer flex flex-col items-center justify-center text-center"
