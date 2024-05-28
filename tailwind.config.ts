@@ -10,6 +10,7 @@ const config: Config = {
 		extend: {
 			colors: {
 				bg: "#F6F6F6",
+				// bg: "#020126",
 				accent: "#637275",
 				text: "#363638",
 				headerBg: "#54D5F5",
@@ -21,6 +22,12 @@ const config: Config = {
 				footerText: "#54D5F5",
 				nftBorder: "#363638",
 				soldTextColor: "#D94A7C",
+				bentoPageBg: "#020126",
+				bentoColor1: "#F27294",
+				bentoColor2: "#D94E9A",
+				bentoColor3: "#0A0140",
+				bentoColor4: "#F2B28D",
+				bentoColor5: "#35A6BB",
 			},
 			boxShadow: {
 				heavy: "0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.5)",

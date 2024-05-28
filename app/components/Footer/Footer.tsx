@@ -24,7 +24,7 @@ const Footer: React.FC = () => {
 					</a>
 				</div>
 			</div>
-			<div className="z-0 hidden md:block">
+			{/* <div className="z-0 hidden md:block">
 				<video
 					src="/hero/video-sprites/bear1.webm"
 					autoPlay
@@ -34,7 +34,7 @@ const Footer: React.FC = () => {
 					style={{ transform: "scale(0.5)" }}
 					// style={{ maxWidth: "200px", maxHeight: "100px" }} // Adjust these values as needed
 				></video>
-			</div>
+			</div> */}
 		</div>
 	);
 };
