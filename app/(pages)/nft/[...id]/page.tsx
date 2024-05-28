@@ -7,12 +7,7 @@ import Navbar from "@/app/components/Navbar";
 import NFTView from "@/app/components/NFTView";
 import { useRouter } from "next/navigation";
 
-import { QueryClient, QueryClientProvider } from "react-query";
-import { ThirdwebProvider } from "thirdweb/react";
-import { sepolia } from "thirdweb/chains";
 import Footer from "@/app/components/Footer";
-
-const queryClient = new QueryClient();
 
 type PageProps = {
 	params: {
@@ -23,15 +18,12 @@ type PageProps = {
 const Page: React.FC<PageProps> = ({ params }) => {
 	const { id } = params;
 	const router = useRouter();
+
 	return (
 		<main className="w-full h-screen">
-			<ThirdwebProvider>
-				<QueryClientProvider client={queryClient}>
-					<Navbar />
-					<NFTView id={id} />
-					<Footer />
-				</QueryClientProvider>
-			</ThirdwebProvider>
+			<Navbar />
+			<NFTView id={id} />
+			<Footer />
 		</main>
 	);
 };
