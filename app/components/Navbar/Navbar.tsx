@@ -9,7 +9,7 @@ const Navbar = () => {
 	return (
 		<>
 			<div
-				className="fixed top-0 z-50 w-full px-4 py-2 bg-headerBg shadow-2xl shadow-accent"
+				className="fixed top-0 z-50 w-full px-4 py-2 bg-headerBg "
 				style={{
 					height: "90px",
 				}}

@@ -54,7 +54,7 @@ const BentoBox: React.FC = () => {
 			</div>
 			<div
 				className="row-span-1 col-span-1 bg-bentoColor5 p-2 text-5xl transform transition-transform duration-300 hover:scale-105 cursor-pointer flex flex-col items-center justify-center text-center"
-				onClick={() => (window.location.href = "/memecoins")}
+				onClick={() => (window.location.href = "/memecoin")}
 			>
 				<p className="text-5xl">And a</p>
 				<p className="text-7xl">meme coin</p>

@@ -45,3 +45,29 @@ body {
 		text-wrap: balance;
 	}
 }
+
+@keyframes spin-slow {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes orbit {
+	0% {
+		transform: rotate(0deg) translateX(200px) rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg) translateX(200px) rotate(-360deg);
+	}
+}
+
+.animate-spin-slow {
+	animation: spin-slow 20s linear infinite;
+}
+
+.animate-orbit {
+	animation: orbit 20s linear infinite;
+}

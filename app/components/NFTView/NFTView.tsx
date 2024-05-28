@@ -2,6 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+	subsets: ["latin"],
+	display: "swap",
+});
 
 type ResponsiveProps = {
 	url: string;
@@ -108,7 +114,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 			<div className="flex flex-row md:justify-center items-center w-full md:gap-x-4">
 				{nftMetadata && (
 					<>
-						<div className="flex flex-col md:flex-row md:gap-4 mt-20 md:mt-0 md:self-start">
+						<div className="flex flex-col md:flex-row md:gap-4 mt-20 mb-20 md:mt-0 md:self-start">
 							<div className="mt-10">
 								<ResponsiveMediaRenderer url={nftMetadata.animation_url} />
 							</div>
