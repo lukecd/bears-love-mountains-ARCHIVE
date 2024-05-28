@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { MediaRenderer } from "thirdweb/react";
 
 type Props = {
 	client: any;
@@ -18,17 +17,7 @@ const HoverMediaRenderer: React.FC<Props> = ({ client, image, animation_url }) =
 		setSrc(image);
 	};
 
-	return (
-		<div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-			<MediaRenderer
-				className="h-auto hover:scale-105 transition-transform duration-300 cursor-pointer shadow-md rounded-lg"
-				client={client}
-				src={src}
-				width="100%"
-				height="100%"
-			/>
-		</div>
-	);
+	return <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}></div>;
 };
 
 export default HoverMediaRenderer;
