@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Inter } from "next/font/google";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
 
 const inter = Inter({
 	subsets: ["latin"],
@@ -55,20 +57,78 @@ interface NFTMetadata {
 	owner?: string;
 }
 
+const WalletOverlay: React.FC = () => (
+	<div className="fixed inset-0 flex items-center justify-center bg-bentoPageBg bg-opacity-80 z-50">
+		<div className="text-center text-white p-6 bg-bentoColor5 rounded-lg shadow-lg">
+			<p className="text-2xl mb-4">Ready to do this? Connect your wallet first.</p>
+			<ConnectButton />
+		</div>
+	</div>
+);
+
+const MintOverlay: React.FC<{ onClose: () => void; price: string }> = ({ onClose, price }) => {
+	const [numToMint, setNumToMint] = useState(1);
+	const [totalPrice, setTotalPrice] = useState<number | null>(null);
+
+	const handleConfirmPrice = () => {
+		setTotalPrice(Number(price) * numToMint);
+	};
+
+	const handleMintNow = () => {
+		// Handle the minting process
+		onClose();
+	};
+
+	return (
+		<div className="fixed inset-0 flex items-center justify-center bg-bentoPageBg bg-opacity-90 z-50">
+			<div className="relative text-center text-black p-6 bg-bentoColor5 rounded-lg shadow-lg w-96 border-8 border-bentoColor4">
+				<button
+					onClick={onClose}
+					className="absolute top-2 right-2 text-black bg-white rounded-full w-8 h-8 flex items-center justify-center"
+				>
+					×
+				</button>
+				<p className="text-3xl mb-4 underline">Mint NFT #42</p>
+				<div className="grid grid-cols-2 gap-4 text-lg">
+					<p>Backing Price:</p>
+					<p className="">{price} BERA</p>
+					<p>Number to Mint:</p>
+					<input
+						type="number"
+						className="w-full p-2 rounded text-black"
+						value={numToMint}
+						onChange={(e) => setNumToMint(Number(e.target.value))}
+					/>
+					<button className="col-span-2 bg-bentoPageBg text-white px-4 py-2 rounded mt-4" onClick={handleConfirmPrice}>
+						Confirm Price
+					</button>
+					{totalPrice !== null && (
+						<>
+							<p>Total Price:</p>
+							<p>{totalPrice} BERA</p>
+							<button className="col-span-2 bg-bentoColor2 text-white px-4 py-2 rounded mt-4" onClick={handleMintNow}>
+								MINT NOW
+							</button>
+						</>
+					)}
+				</div>
+			</div>
+		</div>
+	);
+};
+
 const NFTView: React.FC<NFTViewProps> = ({ id }) => {
+	const { isConnected } = useAccount();
 	const [nftMetadata, setNftMetadata] = useState<NFTMetadata | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [showMintOverlay, setShowMintOverlay] = useState(false);
 
 	const handleMint = () => {
-		// Empty function for Mint button
+		setShowMintOverlay(true);
 	};
 
 	const handleBurn = () => {
 		// Empty function for Burn button
-	};
-
-	const handleConnectWallet = () => {
-		// Empty function for Connect Wallet button
 	};
 
 	useEffect(() => {
@@ -110,22 +170,28 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	}
 
 	return (
-		<div className="flex flex-col w-full h-full bg-bentoBg mt-[100px]">
-			<div className=" text-white flex flex-col justify-center text-center">
+		<div className="flex flex-col w-full h-full bg-bentoBg mt-[100px] relative">
+			{!isConnected && <WalletOverlay />}
+			{showMintOverlay && nftMetadata && (
+				<MintOverlay onClose={() => setShowMintOverlay(false)} price={nftMetadata.price ?? "0.0"} />
+			)}
+			<div className={`text-white flex flex-col justify-center text-center ${!isConnected ? "blur-sm" : ""}`}>
 				<p className="text-2xl">NFTs are priced on a bonding curve.</p>
-				<p className="">
-					Burns are taxed 3% {"=>"} which is used to buy{" "}
+				<p className={inter.className}>
+					Burns are taxed 3% {"=>"} Which is used to buy{" "}
 					<Link className="underline decoration-bentoColor2" href="/memecoin">
 						meme coins
 					</Link>{" "}
-					{"=>"} which are distributed to NFT holders.
+					{"=>"} Which are distributed to NFT holders.
 				</p>
 			</div>
-			<div className="flex flex-row md:justify-center items-center w-full md:gap-x-4">
+			<div
+				className={`flex flex-row md:justify-center items-center w-full md:gap-x-4 ${!isConnected ? "blur-sm" : ""}`}
+			>
 				{nftMetadata && (
 					<>
 						<div className="flex flex-col md:flex-row md:gap-4 mb-20 md:mt-0 md:self-start">
-							<div className="mt-3">
+							<div className="mt-3 relative">
 								<ResponsiveMediaRenderer url={nftMetadata.animation_url} />
 							</div>
 							<div className="w-full md:w-1/2 mt-3">

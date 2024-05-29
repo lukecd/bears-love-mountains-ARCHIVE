@@ -1,15 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { Lilita_One } from "next/font/google";
-
+import Body from "./components/Body";
 import "./globals.css";
-
-// const pageFont = Inter({ subsets: ["latin"] });
-
-// export const inter = Inter({
-// 	subsets: ["latin"],
-// 	display: "swap",
-// });
 
 const pageFont = Lilita_One({ subsets: ["latin"], weight: "400" });
 
@@ -25,7 +17,9 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={pageFont.className}>{children}</body>
+			<body className={pageFont.className}>
+				<Body>{children}</Body>
+			</body>
 		</html>
 	);
 }

@@ -33,16 +33,16 @@ const Navbar = () => {
 									NFTs
 								</Link>
 								<Link href="/memecoin" className="block px-4 py-2 text-text hover:text-soldTextColor">
-									Meme Coin
+									Memecoin
 								</Link>
 								<Link href="/rewards" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									Rewards
 								</Link>
+								<Link href="/portfolio" className="block px-4 py-2 text-text hover:text-soldTextColor">
+									Portfolio
+								</Link>
 								<Link href="/docs" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									Docs
-								</Link>
-								<Link href="/collection/0x" className="block px-4 py-2 text-text hover:text-soldTextColor">
-									Your NFTs
 								</Link>
 							</div>
 						)}

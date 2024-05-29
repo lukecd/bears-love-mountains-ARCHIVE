@@ -76,7 +76,7 @@ const NFTSmall: React.FC<NFTSmallProps> = ({ metadata, id }) => {
 		>
 			<iframe
 				src={metadata.animation_url}
-				className="w-[300px] h-[300px] rounded-2xl shadow-xl pointer-events-none"
+				className="w-[340px] h-[340px] rounded-2xl shadow-xl pointer-events-none"
 			></iframe>
 			<div className="w-full text-start rounded-b-md text-bentoColor3">
 				<p className="">Price: 0.0042 BERA</p>
