@@ -1,98 +1,96 @@
-import { createViemClient, Contract, formatUnits } from "viem";
+import { Address, createPublicClient, formatUnits, http } from "viem";
+import { ethers } from "ethers";
 import getConfig from "next/config";
+import { bearsLoveMemesAbi } from "../abis/BearsLoveMemes";
+import { bearsLoveMountainsAbi } from "../abis/BearsLoveMountains";
+import { bearsLoveDefiAbi } from "../abis/BearsLoveDefi";
+import { sepolia } from "viem/chains";
+import { sep } from "path";
 
-const { publicRuntimeConfig } = getConfig();
+const bearsLoveMemesAddress = process.env.NEXT_PUBLIC_MEME_CONTRACT_ADDRESS;
+const bearsLoveMountainsAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
 
-const provider = new viem.providers.Web3Provider(window.ethereum);
-const signer = provider.getSigner();
-
-const bearsLoveMemesAddress = publicRuntimeConfig.BEARS_LOVE_MEMES_ADDRESS;
-const bearsLoveMountainsAddress = publicRuntimeConfig.BEARS_LOVE_MOUNTAINS_ADDRESS;
-
-const client = createViemClient({
-	provider,
-	signer,
+const publicClient = createPublicClient({
+	chain: sepolia,
+	transport: http("https://eth-sepolia.g.alchemy.com/v2/GhM1EP2edH5wym1A9B0u2NifZVgWAmz2"),
 });
 
-const bearsLoveMemesABI = [
-	/* ABI from BearsLoveMemes.sol */
-];
-const bearsLoveMountainsABI = [
-	/* ABI from BearsLoveMountains.sol */
-];
-
-const bearsLoveMemesContract = new Contract(bearsLoveMemesAddress, bearsLoveMemesABI, client);
-const bearsLoveMountainsContract = new Contract(bearsLoveMountainsAddress, bearsLoveMountainsABI, client);
-
 type NFTMetadata = {
+	id: number;
 	name: string;
 	description: string;
 	image: string;
 	external_url: string;
-	background_color: string;
 	animation_url: string;
-	attributes: any[];
 	price: string;
+	circulatingSupply: number;
 };
 
-export const getMetadataForNFT = async (id: number): Promise<NFTMetadata> => {
-	const uri = await bearsLoveMountainsContract.methods.tokenURI(id).call();
-	const response = await fetch(uri);
-	const metadata = await response.json();
-	const price = await bearsLoveMountainsContract.methods.getPrice(id).call();
+export const getMetadataForNFT = async (id: bigint): Promise<NFTMetadata> => {
+	try {
+		// Metadata
+		const uri = await publicClient.readContract({
+			address: bearsLoveMountainsAddress as Address,
+			abi: bearsLoveMountainsAbi,
+			functionName: "uri",
+			args: [id],
+		});
+		console.log({ uri });
+		const response = await fetch(uri);
+		const metadata = await response.json();
+		console.log({ metadata });
 
+		// Price
+		const price = await publicClient.readContract({
+			address: bearsLoveMountainsAddress as Address,
+			abi: bearsLoveMountainsAbi,
+			functionName: "getPrice",
+			args: [id, BigInt(1), true],
+		});
+		console.log({ price });
+
+		// Circulating supply
+		const circulatingSupply = await publicClient.readContract({
+			address: bearsLoveMountainsAddress as Address,
+			abi: bearsLoveMountainsAbi,
+			functionName: "circulatingSupply",
+			args: [id],
+		});
+		console.log({ circulatingSupply });
+
+		return {
+			...metadata,
+			price: formatUnits(price, 18),
+			circulatingSupply: circulatingSupply.toString(),
+		};
+	} catch (error) {
+		console.log("Error fetching metadata ", error);
+	}
 	return {
-		...metadata,
-		price: formatUnits(price, 18),
+		id: 0,
+		name: "error",
+		description: "error",
+		image: "error",
+		external_url: "error",
+		animation_url: "error",
+		price: "error",
+		circulatingSupply: 0,
 	};
 };
 
 export const getAllNFTMetadata = async (): Promise<NFTMetadata[]> => {
 	const metadataPromises = [];
 	for (let id = 0; id <= 8; id++) {
-		metadataPromises.push(getMetadataForNFT(id));
+		metadataPromises.push(getMetadataForNFT(BigInt(id)));
 	}
 	return Promise.all(metadataPromises);
 };
 
-export const getPriceToMintNNfts = async (number: number): Promise<string> => {
-	// Assuming a fixed price per NFT or modifying to aggregate prices
-	let totalPrice = BigNumber.from(0);
-	for (let i = 0; i < number; i++) {
-		const price = await bearsLoveMountainsContract.methods.getPrice(i).call();
-		totalPrice = totalPrice.add(price);
-	}
-	return formatUnits(totalPrice, 18);
-};
-
-export const mintNFTs = async (number: number, uri: string, price: string): Promise<void> => {
-	const tx = await bearsLoveMountainsContract.methods.mint(uri, price).send({ from: signer.address });
-	await tx.wait();
-};
-
-export const burnNFTs = async (tokenId: number): Promise<void> => {
-	const tx = await bearsLoveMountainsContract.methods.burn(tokenId).send({ from: signer.address });
-	await tx.wait();
-};
-
-export const getMemeCoinBackingPrice = async (): Promise<string> => {
-	const price = await bearsLoveMemesContract.methods.getBackingPrice().call();
-	return formatUnits(price, 18);
-};
-
-export const getPriceToMintNMemeCoins = async (number: number): Promise<string> => {
-	// Assuming fixed price per meme coin
-	const price = await bearsLoveMemesContract.methods.getBackingPrice().call();
-	const totalPrice = BigNumber.from(price).mul(number);
-	return formatUnits(totalPrice, 18);
-};
-
-export const mintMemeCoins = async (amount: number): Promise<void> => {
-	const tx = await bearsLoveMemesContract.methods.mint(signer.address, amount).send({ from: signer.address });
-	await tx.wait();
-};
-
-export const burnMemeCoins = async (amount: number): Promise<void> => {
-	const tx = await bearsLoveMemesContract.methods.burn(signer.address, amount).send({ from: signer.address });
-	await tx.wait();
-};
+// export const getMemeCoinBackingPrice = async (): Promise<string> => {
+// 	const price = await publicClient.readContract({
+// 		address: bearsLoveMemesAddress,
+// 		abi: bearsLoveMemesAbi,
+// 		functionName: "getBackingPrice",
+// 	});
+// 	return formatUnits(price, 18);
+// };

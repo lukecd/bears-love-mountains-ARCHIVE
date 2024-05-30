@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { getAllNFTMetadata } from "../../utils/contractInteraction";
 
 interface GalleryProps {
 	showAll?: boolean; // If true show all NFTs in collection, if false show NFTs owned by that user
@@ -10,11 +11,13 @@ interface GalleryProps {
 
 interface NFTMetadata {
 	id: number;
+	name: string;
+	description: string;
 	image: string;
+	external_url: string;
 	animation_url: string;
 	price: string;
-	token: string;
-	forSale: boolean;
+	circulatingSupply: number;
 }
 
 const Gallery: React.FC<GalleryProps> = ({ showAll, address }) => {
@@ -23,14 +26,18 @@ const Gallery: React.FC<GalleryProps> = ({ showAll, address }) => {
 
 	useEffect(() => {
 		const loadMetadata = async () => {
-			const metadata: NFTMetadata[] = [];
-			for (let i = 0; i < 9; i++) {
-				const response = await fetch(`/metadata/${i}.json`);
-				const data = await response.json();
-				metadata.push(data);
-			}
-			setAllNftMetadata(metadata);
+			const newMetaData = await getAllNFTMetadata();
+			console.log({ newMetaData });
+			setAllNftMetadata(newMetaData);
 			setPlaceHolderCount(0);
+
+			// const metadata: NFTMetadata[] = [];
+			// for (let i = 0; i < 9; i++) {
+			// 	const response = await fetch(`/metadata/${i}.json`);
+			// 	const data = await response.json();
+			// 	metadata.push(data);
+			// }
+			// setAllNftMetadata(metadata);
 		};
 		loadMetadata();
 	}, []);
@@ -79,8 +86,8 @@ const NFTSmall: React.FC<NFTSmallProps> = ({ metadata, id }) => {
 				className="w-[340px] h-[340px] rounded-2xl shadow-xl pointer-events-none"
 			></iframe>
 			<div className="w-full text-start rounded-b-md text-bentoColor3">
-				<p className="">Price: 0.0042 BERA</p>
-				<p className="">Circulating supply: 420</p>
+				<p className="">Price: {metadata.price} BERA</p>
+				<p className="">Circulating supply: {metadata.circulatingSupply}</p>
 			</div>
 			<div className="absolute top-0 left-0 w-full h-full bg-transparent"></div>
 		</div>
