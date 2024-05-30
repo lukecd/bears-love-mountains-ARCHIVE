@@ -12,7 +12,6 @@ const bearsLoveMountainsAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
 const publicClient = createPublicClient({
 	chain: sepolia,
 	transport: http("https://eth-sepolia.g.alchemy.com/v2/GhM1EP2edH5wym1A9B0u2NifZVgWAmz2"),
-	// transport: http("https://rpc.bordel.wtf/sepolia"),
 });
 
 type NFTMetadata = {
