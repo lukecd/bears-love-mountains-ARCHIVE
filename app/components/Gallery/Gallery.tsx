@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { getAllNFTMetadata } from "../../utils/contractInteraction";
+import ResponsiveMediaRenderer from "../ResponsiveMediaRenderer";
 
 interface GalleryProps {
 	showAll?: boolean; // If true show all NFTs in collection, if false show NFTs owned by that user
@@ -10,7 +11,7 @@ interface GalleryProps {
 }
 
 interface NFTMetadata {
-	id: number;
+	id: string;
 	name: string;
 	description: string;
 	image: string;
@@ -80,11 +81,13 @@ const NFTSmall: React.FC<NFTSmallProps> = ({ metadata, id }) => {
 		<div
 			className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-bentoColor5 p-6 rounded-md transform transition-transform duration-300 hover:scale-105 cursor-pointer relative"
 			onClick={() => (window.location.href = `/nft/${id}`)}
+			id={`nft-frame-${id}`}
 		>
-			<iframe
+			{/* <iframe
 				src={metadata.animation_url}
 				className="w-[340px] h-[340px] rounded-2xl shadow-xl pointer-events-none"
-			></iframe>
+			></iframe> */}
+			<ResponsiveMediaRenderer id={`nft-frame-${id}`} url={metadata.animation_url} />
 			<div className="w-full text-start rounded-b-md text-bentoColor3">
 				<p className="">Price: {metadata.price} BERA</p>
 				<p className="">Circulating supply: {metadata.circulatingSupply}</p>

@@ -15,7 +15,7 @@ const publicClient = createPublicClient({
 });
 
 type NFTMetadata = {
-	id: number;
+	id: string;
 	name: string;
 	description: string;
 	image: string;
@@ -57,6 +57,7 @@ export const getMetadataForNFT = async (id: bigint): Promise<NFTMetadata> => {
 
 		return {
 			...metadata,
+			id: id.toString(),
 			price: formatUnits(price, 18),
 			circulatingSupply: circulatingSupply.toString(),
 		};
@@ -64,7 +65,7 @@ export const getMetadataForNFT = async (id: bigint): Promise<NFTMetadata> => {
 		console.log("Error fetching metadata ", error);
 	}
 	return {
-		id: 0,
+		id: id.toString(),
 		name: "error",
 		description: "error",
 		image: "error",
@@ -83,6 +84,16 @@ export const getAllNFTMetadata = async (): Promise<NFTMetadata[]> => {
 	return Promise.all(metadataPromises);
 };
 
+export const getNFTPrice = async (id: bigint, quantity: bigint): Promise<bigint> => {
+	const price = await publicClient.readContract({
+		address: bearsLoveMountainsAddress as Address,
+		abi: bearsLoveMountainsAbi,
+		functionName: "getPrice",
+		args: [id, quantity, true],
+	});
+
+	return price;
+};
 // export const getMemeCoinBackingPrice = async (): Promise<string> => {
 // 	const price = await publicClient.readContract({
 // 		address: bearsLoveMemesAddress,

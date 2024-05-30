@@ -5,56 +5,28 @@ import Link from "next/link";
 import { Inter } from "next/font/google";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
+import { getMetadataForNFT, getNFTPrice } from "../../utils/contractInteraction";
+import ResponsiveMediaRenderer from "../ResponsiveMediaRenderer";
+import { formatUnits } from "viem";
 
 const inter = Inter({
 	subsets: ["latin"],
 	display: "swap",
 });
 
-type ResponsiveProps = {
-	url: string;
-};
-
-const ResponsiveMediaRenderer: React.FC<ResponsiveProps> = ({ url }) => {
-	const [size, setSize] = useState("500px");
-
-	useEffect(() => {
-		const handleResize = () => {
-			const currentWidth = window.innerWidth;
-			if (currentWidth >= 500) {
-				setSize("500px");
-			} else if (currentWidth < 500) {
-				setSize(`${currentWidth}px`);
-			}
-		};
-
-		window.addEventListener("resize", handleResize);
-		handleResize(); // Initial check on component mount
-
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, []);
-
-	return <iframe src={url} className="w-full h-full rounded-2xl" style={{ width: size, height: size }} />;
-};
-
 type NFTViewProps = {
 	id: string; // The id of the NFT to display
 };
 
 interface NFTMetadata {
+	id: string;
 	name: string;
 	description: string;
 	image: string;
 	external_url: string;
-	background_color: string;
 	animation_url: string;
-	attributes: any[];
-	price?: string;
-	token?: string;
-	forSale: boolean;
-	owner?: string;
+	price: string;
+	circulatingSupply: number;
 }
 
 const WalletOverlay: React.FC = () => (
@@ -66,12 +38,27 @@ const WalletOverlay: React.FC = () => (
 	</div>
 );
 
-const MintOverlay: React.FC<{ onClose: () => void; price: string }> = ({ onClose, price }) => {
-	const [numToMint, setNumToMint] = useState(1);
-	const [totalPrice, setTotalPrice] = useState<number | null>(null);
+interface NFTMetadata {
+	id: string;
+}
 
-	const handleConfirmPrice = () => {
-		setTotalPrice(Number(price) * numToMint);
+interface MintOverlayProps {
+	nftMetadata: NFTMetadata;
+	onClose: () => void;
+	price: string;
+}
+
+const MintOverlay: React.FC<MintOverlayProps> = ({ nftMetadata, onClose, price }) => {
+	const [numToMint, setNumToMint] = useState<string>("1");
+	const [txActive, setTxActive] = useState(false);
+	const [totalPrice, setTotalPrice] = useState<string | null>(null);
+
+	const handleConfirmPrice = async () => {
+		setTxActive(true);
+		const price = await getNFTPrice(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)));
+		const formattedPrice = formatUnits(BigInt(price), 18);
+		setTotalPrice(formattedPrice);
+		setTxActive(false);
 	};
 
 	const handleMintNow = () => {
@@ -79,28 +66,62 @@ const MintOverlay: React.FC<{ onClose: () => void; price: string }> = ({ onClose
 		onClose();
 	};
 
+	const handleNumToMintChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		if (value === "" || /^[1-9]\d*$/.test(value)) {
+			setNumToMint(value);
+		}
+	};
+
+	const handleNumToMintBlur = () => {
+		if (numToMint === "" || parseInt(numToMint) < 1) {
+			setNumToMint("1");
+		}
+	};
+
 	return (
 		<div className="fixed inset-0 flex items-center justify-center bg-bentoPageBg bg-opacity-90 z-50">
-			<div className="relative text-center text-black p-6 bg-bentoColor5 rounded-lg shadow-lg w-96 border-8 border-bentoColor4">
+			<div className="relative text-center text-black p-6 bg-bentoColor5 rounded-lg shadow-lg w-128 border-8 border-bentoColor4">
 				<button
 					onClick={onClose}
 					className="absolute top-2 right-2 text-black bg-white rounded-full w-8 h-8 flex items-center justify-center"
 				>
 					×
 				</button>
-				<p className="text-3xl mb-4 underline">Mint NFT #42</p>
+				<p className="text-3xl mb-4 underline">Mint NFT</p>
 				<div className="grid grid-cols-2 gap-4 text-lg">
 					<p>Backing Price:</p>
 					<p className="">{price} BERA</p>
 					<p>Number to Mint:</p>
 					<input
-						type="number"
+						type="text"
 						className="w-full p-2 rounded text-black"
 						value={numToMint}
-						onChange={(e) => setNumToMint(Number(e.target.value))}
+						onChange={handleNumToMintChange}
+						onBlur={handleNumToMintBlur}
 					/>
-					<button className="col-span-2 bg-bentoPageBg text-white px-4 py-2 rounded mt-4" onClick={handleConfirmPrice}>
-						Confirm Price
+					<button
+						disabled={txActive}
+						className="col-span-2 bg-bentoPageBg text-white px-4 py-2 rounded mt-4"
+						style={{ height: "48px" }}
+						onClick={handleConfirmPrice}
+					>
+						{txActive ? (
+							<div className="flex justify-center items-center" style={{ height: "100%" }}>
+								<img
+									src="/hero/mountains/planet-9.png"
+									alt="Stationary Planet"
+									className="rotate-forever"
+									style={{
+										filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
+										zIndex: 20,
+										height: "36px",
+									}}
+								/>
+							</div>
+						) : (
+							"Confirm Price"
+						)}
 					</button>
 					{totalPrice !== null && (
 						<>
@@ -134,15 +155,9 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	useEffect(() => {
 		const fetchMetadata = async () => {
 			try {
-				const response = await fetch(`/metadata/${id}.json`);
-				const data: NFTMetadata = await response.json();
-				setNftMetadata({
-					...data,
-					price: "0.0042",
-					token: "BERA",
-					forSale: true,
-					owner: "0x1234567890abcdef1234567890abcdef12345678",
-				});
+				const metadata = await getMetadataForNFT(BigInt(id));
+				console.log({ metadata });
+				setNftMetadata(metadata);
 				setIsLoading(false);
 			} catch (error) {
 				console.error("Error fetching NFT metadata:", error);
@@ -173,7 +188,11 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		<div className="flex flex-col w-full h-full bg-bentoBg mt-[100px] relative">
 			{!isConnected && <WalletOverlay />}
 			{showMintOverlay && nftMetadata && (
-				<MintOverlay onClose={() => setShowMintOverlay(false)} price={nftMetadata.price ?? "0.0"} />
+				<MintOverlay
+					nftMetadata={nftMetadata}
+					onClose={() => setShowMintOverlay(false)}
+					price={nftMetadata.price ?? "0.0"}
+				/>
 			)}
 			<div className={`text-white flex flex-col justify-center text-center ${!isConnected ? "blur-sm" : ""}`}>
 				<p className="text-2xl">NFTs are priced on a bonding curve.</p>
@@ -191,17 +210,15 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 				{nftMetadata && (
 					<>
 						<div className="flex flex-col md:flex-row md:gap-4 mb-20 md:mt-0 md:self-start">
-							<div className="mt-3 relative">
-								<ResponsiveMediaRenderer url={nftMetadata.animation_url} />
+							<div className="mt-3 relative" id={`nft-viewer-${id}`}>
+								<ResponsiveMediaRenderer id={`nft-viewer-${id}`} url={nftMetadata.animation_url} />
 							</div>
 							<div className="w-full md:w-1/2 mt-3">
 								<div className="grid grid-rows-6 grid-cols-2 gap-4 h-full">
 									<div className="row-span-2 col-span-2 bg-bentoColor1 flex items-center justify-center text-2xl p-4">
 										<div className="text-center">
 											<p className="text-5xl">Price</p>
-											<p>
-												{nftMetadata.price} {nftMetadata.token}
-											</p>
+											<p>{nftMetadata.price}</p>
 										</div>
 									</div>
 									<div className="row-span-2 col-span-2 bg-bentoColor2 flex items-center justify-center text-2xl p-4">
@@ -210,7 +227,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 												Circulating
 												<br /> supply
 											</p>
-											<p className="text-5xl">420</p>
+											<p className="text-5xl">{nftMetadata.circulatingSupply}</p>
 										</div>
 									</div>
 									<div
