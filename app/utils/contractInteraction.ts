@@ -1,5 +1,4 @@
 import { Address, createPublicClient, formatUnits, http } from "viem";
-import { ethers } from "ethers";
 import getConfig from "next/config";
 import { bearsLoveMemesAbi } from "../abis/BearsLoveMemes";
 import { bearsLoveMountainsAbi } from "../abis/BearsLoveMountains";
