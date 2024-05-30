@@ -11,7 +11,8 @@ const bearsLoveMountainsAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
 
 const publicClient = createPublicClient({
 	chain: sepolia,
-	transport: http("https://eth-sepolia.g.alchemy.com/v2/GhM1EP2edH5wym1A9B0u2NifZVgWAmz2"),
+	// transport: http("https://eth-sepolia.g.alchemy.com/v2/GhM1EP2edH5wym1A9B0u2NifZVgWAmz2"),
+	transport: http(),
 });
 
 type NFTMetadata = {
@@ -28,6 +29,7 @@ type NFTMetadata = {
 export const getMetadataForNFT = async (id: bigint): Promise<NFTMetadata> => {
 	try {
 		// Metadata
+		console.log("Requesting URI for id=", id);
 		const uri = await publicClient.readContract({
 			address: bearsLoveMountainsAddress as Address,
 			abi: bearsLoveMountainsAbi,
@@ -37,7 +39,6 @@ export const getMetadataForNFT = async (id: bigint): Promise<NFTMetadata> => {
 		console.log({ uri });
 		const response = await fetch(uri);
 		const metadata = await response.json();
-		console.log({ metadata });
 
 		// Price
 		const price = await publicClient.readContract({
@@ -46,7 +47,6 @@ export const getMetadataForNFT = async (id: bigint): Promise<NFTMetadata> => {
 			functionName: "getPrice",
 			args: [id, BigInt(1), true],
 		});
-		console.log({ price });
 
 		// Circulating supply
 		const circulatingSupply = await publicClient.readContract({
@@ -55,7 +55,6 @@ export const getMetadataForNFT = async (id: bigint): Promise<NFTMetadata> => {
 			functionName: "circulatingSupply",
 			args: [id],
 		});
-		console.log({ circulatingSupply });
 
 		return {
 			...metadata,
