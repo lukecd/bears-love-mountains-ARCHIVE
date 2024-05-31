@@ -14,11 +14,17 @@ const publicClient = createPublicClient({
 	transport: http("https://eth-sepolia.g.alchemy.com/v2/GhM1EP2edH5wym1A9B0u2NifZVgWAmz2"),
 });
 
-const client = createWalletClient({
-	chain: sepolia,
-	// transport: custom(window.ethereum!),
-	transport: http("https://eth-sepolia.g.alchemy.com/v2/GhM1EP2edH5wym1A9B0u2NifZVgWAmz2"),
-});
+let client;
+
+if (typeof window !== "undefined" && window.ethereum) {
+	client = createWalletClient({
+		chain: sepolia,
+		transport: custom(window.ethereum),
+	});
+} else {
+	client = null;
+	console.error("Ethereum provider is not available");
+}
 
 /**                               NFT FUNCTIONS																	 */
 /**                               NFT READING 																	 */
@@ -117,6 +123,8 @@ export const getBalanceForUserAndId = async (address: string, id: bigint): Promi
 /**                               NFT WRITING  																	 */
 export const mintNFT = async (id: bigint, quantity: bigint): Promise<boolean> => {
 	try {
+		console.log({ client });
+
 		const [account] = await client.getAddresses();
 		console.log({ account });
 

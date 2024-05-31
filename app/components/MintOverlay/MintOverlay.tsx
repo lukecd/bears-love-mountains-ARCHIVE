@@ -18,9 +18,10 @@ interface MintOverlayProps {
 	nftMetadata: NFTMetadata;
 	onClose: () => void;
 	price: string;
+	onMintSuccess: () => void;
 }
 
-const MintOverlay: React.FC<MintOverlayProps> = ({ nftMetadata, onClose, price }) => {
+const MintOverlay: React.FC<MintOverlayProps> = ({ nftMetadata, onClose, price, onMintSuccess }) => {
 	const [numToMint, setNumToMint] = useState<string>("1");
 	const [showSuccess, setShowSuccess] = useState<boolean>(false);
 	const [priceTxActive, setPriceTxActive] = useState(false);
@@ -41,6 +42,7 @@ const MintOverlay: React.FC<MintOverlayProps> = ({ nftMetadata, onClose, price }
 		await mintNFT(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)));
 		setMintTxActive(false);
 		setShowSuccess(true);
+		onMintSuccess(); // Call the success callback
 	};
 
 	const handleNumToMintChange = (e: React.ChangeEvent<HTMLInputElement>) => {

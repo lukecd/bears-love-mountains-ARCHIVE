@@ -30,7 +30,7 @@ interface NFTMetadata {
 }
 
 const NFTView: React.FC<NFTViewProps> = ({ id }) => {
-	const { isConnected, addresses } = useAccount();
+	const { isConnected, address } = useAccount();
 	const [nftMetadata, setNftMetadata] = useState<NFTMetadata | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [myBalance, setMyBalance] = useState<string>("-1");
@@ -43,36 +43,37 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 
 	const handleBurn = () => {
 		setShowBurnOverlay(true);
-		// Empty function for Burn button
+	};
+
+	const fetchMetadata = async () => {
+		try {
+			const metadata = await getMetadataForNFT(BigInt(id));
+			console.log({ metadata });
+			setNftMetadata(metadata);
+			setIsLoading(false);
+		} catch (error) {
+			console.error("Error fetching NFT metadata:", error);
+		}
+	};
+
+	const fetchHoldings = async () => {
+		try {
+			if (isConnected && address) {
+				const balance = await getBalanceForUserAndId(address, BigInt(id));
+				setMyBalance(balance.toString());
+			}
+		} catch (error) {
+			console.error("Error fetching NFT holdings:", error);
+		}
 	};
 
 	useEffect(() => {
-		const fetchMetadata = async () => {
-			try {
-				const metadata = await getMetadataForNFT(BigInt(id));
-				console.log({ metadata });
-				setNftMetadata(metadata);
-				setIsLoading(false);
-			} catch (error) {
-				console.error("Error fetching NFT metadata:", error);
-			}
-		};
-
 		fetchMetadata();
 	}, [id]);
 
 	useEffect(() => {
-		const fetchHoldings = async () => {
-			try {
-				const balance = await getBalanceForUserAndId(addresses![0], BigInt(id));
-				setMyBalance(balance.toString());
-			} catch (error) {
-				console.error("Error fetching NFT metadata:", error);
-			}
-		};
-
-		if (isConnected && addresses && addresses?.length > 0) fetchHoldings();
-	}, [isConnected]);
+		fetchHoldings();
+	}, [isConnected, address]);
 
 	if (isLoading) {
 		return (
@@ -111,6 +112,10 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 					nftMetadata={nftMetadata}
 					onClose={() => setShowMintOverlay(false)}
 					price={nftMetadata.price ?? "0.0"}
+					onMintSuccess={() => {
+						fetchMetadata();
+						fetchHoldings();
+					}}
 				/>
 			)}
 			<div className="text-white flex flex-col justify-center text-center">
