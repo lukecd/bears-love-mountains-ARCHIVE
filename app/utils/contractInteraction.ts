@@ -16,7 +16,8 @@ const publicClient = createPublicClient({
 
 const client = createWalletClient({
 	chain: sepolia,
-	transport: custom(window.ethereum!),
+	// transport: custom(window.ethereum!),
+	transport: http("https://eth-sepolia.g.alchemy.com/v2/GhM1EP2edH5wym1A9B0u2NifZVgWAmz2"),
 });
 
 /**                               NFT FUNCTIONS																	 */

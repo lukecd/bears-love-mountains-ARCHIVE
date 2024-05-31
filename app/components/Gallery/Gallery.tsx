@@ -80,14 +80,14 @@ const NFTSmall: React.FC<NFTSmallProps> = ({ metadata, id }) => {
 	return (
 		<div
 			className="flex flex-col w-full md:w-1/3 lg:w-1/4 justify-center items-center bg-bentoColor5 p-6 rounded-md transform transition-transform duration-300 hover:scale-105 cursor-pointer relative"
-			onClick={() => (window.location.href = `/nft/${id}`)}
+			onClick={() => (window.location.href = `/nft/${metadata.id}`)}
 			id={`nft-frame-${id}`}
 		>
 			{/* <iframe
 				src={metadata.animation_url}
 				className="w-[340px] h-[340px] rounded-2xl shadow-xl pointer-events-none"
 			></iframe> */}
-			<ResponsiveMediaRenderer id={`nft-frame-${id}`} url={metadata.animation_url} />
+			<ResponsiveMediaRenderer id={`nft-frame-${metadata.id}`} url={metadata.animation_url} />
 			<div className="w-full text-start rounded-b-md text-bentoColor3">
 				<p className="">Price: {metadata.price} BERA</p>
 				<p className="">Circulating supply: {metadata.circulatingSupply}</p>
