@@ -71,3 +71,42 @@ body {
 .animate-orbit {
 	animation: orbit 20s linear infinite;
 }
+
+.fixed.inset-0.flex.items-center.justify-center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.relative.text-center.text-black.p-6.bg-bentoColor5.rounded-lg.shadow-lg.w-128.h-128.border-8.border-bentoColor4 {
+	width: 512px; /* Fixed width */
+	height: 420px; /* Fixed height */
+}
+
+.transform.scale-75 {
+	transform: scale(0.75);
+}
+
+.speech-bubble {
+	position: relative;
+	background: white;
+	border-radius: 0.4em;
+	padding: 20px; /* Increased padding */
+	max-width: 420px;
+}
+
+.speech-bubble::after {
+	content: "";
+	position: absolute;
+	bottom: -80px; /* Adjust to match the design */
+	left: 50%;
+	width: 0;
+	height: 0;
+	border: 80px solid transparent; /* Increase the border size for a larger connector */
+	border-top-color: white;
+	border-bottom: 0;
+	border-left: 0;
+	margin-left: -20px; /* Adjust to center the connector */
+	margin-bottom: 0; /* Remove the margin-bottom adjustment */
+	transform: scaleX(-1);
+}

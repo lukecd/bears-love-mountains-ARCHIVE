@@ -1,4 +1,4 @@
-import { Address, createPublicClient, formatUnits, http } from "viem";
+import { Address, createPublicClient, formatUnits, http, createWalletClient, custom, parseEther } from "viem";
 import getConfig from "next/config";
 import { bearsLoveMemesAbi } from "../abis/BearsLoveMemes";
 import { bearsLoveMountainsAbi } from "../abis/BearsLoveMountains";
@@ -14,6 +14,13 @@ const publicClient = createPublicClient({
 	transport: http("https://eth-sepolia.g.alchemy.com/v2/GhM1EP2edH5wym1A9B0u2NifZVgWAmz2"),
 });
 
+const client = createWalletClient({
+	chain: sepolia,
+	transport: custom(window.ethereum!),
+});
+
+/**                               NFT FUNCTIONS																	 */
+/**                               NFT READING 																	 */
 type NFTMetadata = {
 	id: string;
 	name: string;
@@ -94,11 +101,32 @@ export const getNFTPrice = async (id: bigint, quantity: bigint): Promise<bigint>
 
 	return price;
 };
-// export const getMemeCoinBackingPrice = async (): Promise<string> => {
-// 	const price = await publicClient.readContract({
-// 		address: bearsLoveMemesAddress,
-// 		abi: bearsLoveMemesAbi,
-// 		functionName: "getBackingPrice",
-// 	});
-// 	return formatUnits(price, 18);
-// };
+
+/**                               NFT WRITING  																	 */
+export const mintNFT = async (id: bigint, quantity: bigint): Promise<boolean> => {
+	try {
+		const [account] = await client.getAddresses();
+		console.log({ account });
+
+		const price = await getNFTPrice(id, quantity);
+		console.log({ price });
+
+		const hash = await client.writeContract({
+			address: bearsLoveMountainsAddress as Address,
+			abi: bearsLoveMountainsAbi,
+			functionName: "mint",
+			args: [id, quantity],
+			value: price,
+			account,
+		});
+		console.log({ hash });
+
+		const receipt = await publicClient.waitForTransactionReceipt({ hash });
+		console.log({ receipt });
+
+		return true;
+	} catch (e) {
+		console.log("Error minting NFT ", e);
+		return false;
+	}
+};

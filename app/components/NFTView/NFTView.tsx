@@ -5,10 +5,10 @@ import Link from "next/link";
 import { Inter } from "next/font/google";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
-import { getMetadataForNFT, getNFTPrice } from "../../utils/contractInteraction";
+import { getMetadataForNFT, getNFTPrice, mintNFT } from "../../utils/contractInteraction";
 import ResponsiveMediaRenderer from "../ResponsiveMediaRenderer";
 import { formatUnits } from "viem";
-
+import MintOverlay from "../MintOverlay";
 const inter = Inter({
 	subsets: ["latin"],
 	display: "swap",
@@ -37,106 +37,6 @@ const WalletOverlay: React.FC = () => (
 		</div>
 	</div>
 );
-
-interface NFTMetadata {
-	id: string;
-}
-
-interface MintOverlayProps {
-	nftMetadata: NFTMetadata;
-	onClose: () => void;
-	price: string;
-}
-
-const MintOverlay: React.FC<MintOverlayProps> = ({ nftMetadata, onClose, price }) => {
-	const [numToMint, setNumToMint] = useState<string>("1");
-	const [txActive, setTxActive] = useState(false);
-	const [totalPrice, setTotalPrice] = useState<string | null>(null);
-
-	const handleConfirmPrice = async () => {
-		setTxActive(true);
-		const price = await getNFTPrice(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)));
-		const formattedPrice = formatUnits(BigInt(price), 18);
-		setTotalPrice(formattedPrice);
-		setTxActive(false);
-	};
-
-	const handleMintNow = () => {
-		// Handle the minting process
-		onClose();
-	};
-
-	const handleNumToMintChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value;
-		if (value === "" || /^[1-9]\d*$/.test(value)) {
-			setNumToMint(value);
-		}
-	};
-
-	const handleNumToMintBlur = () => {
-		if (numToMint === "" || parseInt(numToMint) < 1) {
-			setNumToMint("1");
-		}
-	};
-
-	return (
-		<div className="fixed inset-0 flex items-center justify-center bg-bentoPageBg bg-opacity-90 z-50">
-			<div className="relative text-center text-black p-6 bg-bentoColor5 rounded-lg shadow-lg w-128 border-8 border-bentoColor4">
-				<button
-					onClick={onClose}
-					className="absolute top-2 right-2 text-black bg-white rounded-full w-8 h-8 flex items-center justify-center"
-				>
-					×
-				</button>
-				<p className="text-3xl mb-4 underline">Mint NFT</p>
-				<div className="grid grid-cols-2 gap-4 text-lg">
-					<p>Backing Price:</p>
-					<p className="">{price} BERA</p>
-					<p>Number to Mint:</p>
-					<input
-						type="text"
-						className="w-full p-2 rounded text-black"
-						value={numToMint}
-						onChange={handleNumToMintChange}
-						onBlur={handleNumToMintBlur}
-					/>
-					<button
-						disabled={txActive}
-						className="col-span-2 bg-bentoPageBg text-white px-4 py-2 rounded mt-4"
-						style={{ height: "48px" }}
-						onClick={handleConfirmPrice}
-					>
-						{txActive ? (
-							<div className="flex justify-center items-center" style={{ height: "100%" }}>
-								<img
-									src="/hero/mountains/planet-9.png"
-									alt="Stationary Planet"
-									className="rotate-forever"
-									style={{
-										filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
-										zIndex: 20,
-										height: "36px",
-									}}
-								/>
-							</div>
-						) : (
-							"Confirm Price"
-						)}
-					</button>
-					{totalPrice !== null && (
-						<>
-							<p>Total Price:</p>
-							<p>{totalPrice} BERA</p>
-							<button className="col-span-2 bg-bentoColor2 text-white px-4 py-2 rounded mt-4" onClick={handleMintNow}>
-								MINT NOW
-							</button>
-						</>
-					)}
-				</div>
-			</div>
-		</div>
-	);
-};
 
 const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	const { isConnected } = useAccount();
