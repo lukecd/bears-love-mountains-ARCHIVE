@@ -38,7 +38,7 @@ const MintOverlay: React.FC<MintOverlayProps> = ({ nftMetadata, onClose, price }
 
 	const handleMintNow = async () => {
 		setMintTxActive(true);
-		// await mintNFT(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)));
+		await mintNFT(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)));
 		setMintTxActive(false);
 		setShowSuccess(true);
 	};

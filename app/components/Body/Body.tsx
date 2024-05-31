@@ -25,7 +25,7 @@ const Body: React.FC<BodyProps> = ({ children }) => {
 	return (
 		<WagmiProvider config={config}>
 			<QueryClientProvider client={queryClient}>
-				<RainbowKitProvider>
+				<RainbowKitProvider initialChain={sepolia}>
 					<div className={pageFont.className}>{children}</div>
 				</RainbowKitProvider>
 			</QueryClientProvider>

@@ -85,7 +85,7 @@ export const getMetadataForNFT = async (id: bigint): Promise<NFTMetadata> => {
 
 export const getAllNFTMetadata = async (): Promise<NFTMetadata[]> => {
 	const metadataPromises = [];
-	for (let id = 0; id <= 8; id++) {
+	for (let id = 8; id >= 0; id--) {
 		metadataPromises.push(getMetadataForNFT(BigInt(id)));
 	}
 	return Promise.all(metadataPromises);
@@ -100,6 +100,17 @@ export const getNFTPrice = async (id: bigint, quantity: bigint): Promise<bigint>
 	});
 
 	return price;
+};
+
+export const getBalanceForUserAndId = async (address: string, id: bigint): Promise<bigint> => {
+	const balance = await publicClient.readContract({
+		address: bearsLoveMountainsAddress as Address,
+		abi: bearsLoveMountainsAbi,
+		functionName: "balanceOf",
+		args: [address as Address, id],
+	});
+
+	return balance;
 };
 
 /**                               NFT WRITING  																	 */
@@ -117,6 +128,30 @@ export const mintNFT = async (id: bigint, quantity: bigint): Promise<boolean> =>
 			functionName: "mint",
 			args: [id, quantity],
 			value: price,
+			account,
+		});
+		console.log({ hash });
+
+		const receipt = await publicClient.waitForTransactionReceipt({ hash });
+		console.log({ receipt });
+
+		return true;
+	} catch (e) {
+		console.log("Error minting NFT ", e);
+		return false;
+	}
+};
+
+export const burnNFT = async (id: bigint, quantity: bigint): Promise<boolean> => {
+	try {
+		const [account] = await client.getAddresses();
+		console.log({ account });
+
+		const hash = await client.writeContract({
+			address: bearsLoveMountainsAddress as Address,
+			abi: bearsLoveMountainsAbi,
+			functionName: "burn",
+			args: [id, quantity],
 			account,
 		});
 		console.log({ hash });
