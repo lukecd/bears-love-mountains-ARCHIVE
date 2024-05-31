@@ -123,54 +123,57 @@ export const getBalanceForUserAndId = async (address: string, id: bigint): Promi
 /**                               NFT WRITING  																	 */
 export const mintNFT = async (id: bigint, quantity: bigint): Promise<boolean> => {
 	try {
-		console.log({ client });
+		if (client) {
+			console.log({ client });
 
-		const [account] = await client.getAddresses();
-		console.log({ account });
+			const [account] = await client.getAddresses();
+			console.log({ account });
 
-		const price = await getNFTPrice(id, quantity);
-		console.log({ price });
+			const price = await getNFTPrice(id, quantity);
+			console.log({ price });
 
-		const hash = await client.writeContract({
-			address: bearsLoveMountainsAddress as Address,
-			abi: bearsLoveMountainsAbi,
-			functionName: "mint",
-			args: [id, quantity],
-			value: price,
-			account,
-		});
-		console.log({ hash });
+			const hash = await client.writeContract({
+				address: bearsLoveMountainsAddress as Address,
+				abi: bearsLoveMountainsAbi,
+				functionName: "mint",
+				args: [id, quantity],
+				value: price,
+				account,
+			});
+			console.log({ hash });
 
-		const receipt = await publicClient.waitForTransactionReceipt({ hash });
-		console.log({ receipt });
-
-		return true;
+			const receipt = await publicClient.waitForTransactionReceipt({ hash });
+			console.log({ receipt });
+			return true;
+		}
 	} catch (e) {
 		console.log("Error minting NFT ", e);
-		return false;
 	}
+	return false;
 };
 
 export const burnNFT = async (id: bigint, quantity: bigint): Promise<boolean> => {
 	try {
-		const [account] = await client.getAddresses();
-		console.log({ account });
+		if (client) {
+			const [account] = await client.getAddresses();
+			console.log({ account });
 
-		const hash = await client.writeContract({
-			address: bearsLoveMountainsAddress as Address,
-			abi: bearsLoveMountainsAbi,
-			functionName: "burn",
-			args: [id, quantity],
-			account,
-		});
-		console.log({ hash });
+			const hash = await client.writeContract({
+				address: bearsLoveMountainsAddress as Address,
+				abi: bearsLoveMountainsAbi,
+				functionName: "burn",
+				args: [id, quantity],
+				account,
+			});
+			console.log({ hash });
 
-		const receipt = await publicClient.waitForTransactionReceipt({ hash });
-		console.log({ receipt });
+			const receipt = await publicClient.waitForTransactionReceipt({ hash });
+			console.log({ receipt });
 
-		return true;
+			return true;
+		}
 	} catch (e) {
 		console.log("Error minting NFT ", e);
-		return false;
 	}
+	return false;
 };
