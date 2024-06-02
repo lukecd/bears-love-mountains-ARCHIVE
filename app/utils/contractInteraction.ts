@@ -177,3 +177,70 @@ export const burnNFT = async (id: bigint, quantity: bigint): Promise<boolean> =>
 	}
 	return false;
 };
+
+/**                               ERC20 FUNCTIONS																	 */
+/**                               ERC20 READING 																	 */
+export const getErc20Price = async (quantity: string): Promise<bigint> => {
+	const quantityBigInt = parseEther(quantity);
+
+	const price = await publicClient.readContract({
+		address: bearsLoveMemesAddress as Address,
+		abi: bearsLoveMemesAbi,
+		functionName: "getPrice",
+		args: [quantityBigInt],
+	});
+
+	return price;
+};
+
+export const getErc20Supply = async (): Promise<bigint> => {
+	const supply = await publicClient.readContract({
+		address: bearsLoveMemesAddress as Address,
+		abi: bearsLoveMemesAbi,
+		functionName: "circulatingSupply",
+	});
+
+	return supply;
+};
+
+export const getErc20BalanceForUser = async (address: string): Promise<bigint> => {
+	const supply = await publicClient.readContract({
+		address: bearsLoveMemesAddress as Address,
+		abi: bearsLoveMemesAbi,
+		functionName: "balanceOf",
+		args: [address as Address],
+	});
+
+	return supply;
+};
+
+/**                              ERC20 WRITING  																	 */
+export const mintErc20 = async (quantity: bigint): Promise<boolean> => {
+	try {
+		if (client) {
+			console.log({ client });
+
+			const [account] = await client.getAddresses();
+			console.log({ account });
+
+			const price = await getErc20Price(quantity);
+			console.log({ price });
+
+			const hash = await client.writeContract({
+				address: bearsLoveMemesAddress as Address,
+				abi: bearsLoveMemesAbi,
+				functionName: "mintWithETH",
+				value: price,
+				account,
+			});
+			console.log({ hash });
+
+			const receipt = await publicClient.waitForTransactionReceipt({ hash });
+			console.log({ receipt });
+			return true;
+		}
+	} catch (e) {
+		console.log("Error minting NFT ", e);
+	}
+	return false;
+};

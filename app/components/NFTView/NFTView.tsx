@@ -7,7 +7,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { getMetadataForNFT, getBalanceForUserAndId } from "../../utils/contractInteraction";
 import ResponsiveMediaRenderer from "../ResponsiveMediaRenderer";
-import MintOverlay from "../MintOverlay";
+import MintNftOverlay from "../MintNftOverlay";
 
 const inter = Inter({
 	subsets: ["latin"],
@@ -108,7 +108,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 	return (
 		<div className="flex flex-col w-full h-full bg-bentoBg mt-[100px] relative">
 			{showMintOverlay && nftMetadata && (
-				<MintOverlay
+				<MintNftOverlay
 					nftMetadata={nftMetadata}
 					onClose={() => setShowMintOverlay(false)}
 					price={nftMetadata.price ?? "0.0"}
