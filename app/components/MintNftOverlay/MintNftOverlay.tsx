@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { getNFTPrice, mintNFT } from "../../utils/contractInteraction";
+import { getNFTPrice, mintNFT, burnNFT } from "../../utils/contractInteraction";
 import { formatUnits } from "viem";
 
 interface NFTMetadata {
@@ -19,9 +19,10 @@ interface MintNftOverlayProps {
 	onClose: () => void;
 	price: string;
 	onMintSuccess: () => void;
+	shouldMint: boolean;
 }
 
-const MintNftOverlay: React.FC<MintNftOverlayProps> = ({ nftMetadata, onClose, price, onMintSuccess }) => {
+const MintNftOverlay: React.FC<MintNftOverlayProps> = ({ nftMetadata, onClose, price, onMintSuccess, shouldMint }) => {
 	const [numToMint, setNumToMint] = useState<string>("1");
 	const [showSuccess, setShowSuccess] = useState<boolean>(false);
 	const [priceTxActive, setPriceTxActive] = useState(false);
@@ -31,24 +32,35 @@ const MintNftOverlay: React.FC<MintNftOverlayProps> = ({ nftMetadata, onClose, p
 
 	const handleConfirmPrice = async () => {
 		setPriceTxActive(true);
-		const price = await getNFTPrice(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)));
-		const formattedPrice = formatUnits(BigInt(price), 18);
-		setTotalPrice(formattedPrice);
+		if (shouldMint) {
+			const price = await getNFTPrice(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)), shouldMint);
+			const formattedPrice = formatUnits(BigInt(price), 18);
+			setTotalPrice(formattedPrice);
+		} else {
+			const price = await getNFTPrice(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)), shouldMint);
+			const formattedValue = formatUnits(BigInt(price), 18);
+			setTotalPrice(formattedValue);
+		}
 		setPriceTxActive(false);
 	};
 
-	const handleMintNow = async () => {
+	const handleTransaction = async () => {
 		setMintTxActive(true);
-		await mintNFT(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)));
+		if (shouldMint) {
+			await mintNFT(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)));
+		} else {
+			await burnNFT(BigInt(nftMetadata.id), BigInt(parseInt(numToMint)));
+		}
 		setMintTxActive(false);
 		setShowSuccess(true);
-		onMintSuccess(); // Call the success callback
+		onMintSuccess();
 	};
 
 	const handleNumToMintChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value;
-		if (value === "" || /^[1-9]\d*$/.test(value)) {
+		if (value === "" || /^\d*\.?\d*$/.test(value)) {
 			setNumToMint(value);
+			setTotalPrice(null);
 		}
 	};
 
@@ -63,80 +75,115 @@ const MintNftOverlay: React.FC<MintNftOverlayProps> = ({ nftMetadata, onClose, p
 			<div className="relative text-center text-black p-6 bg-bentoColor5 rounded-lg shadow-lg w-128 h-128 border-8 border-bentoColor4">
 				<button
 					onClick={onClose}
-					className="absolute top-2 right-2 text-black bg-white rounded-full w-8 h-8 flex items-center justify-center"
+					className="absolute top-2 right-2 text-black bg-white rounded-full w-8 h-8 flex items-center justify-center z-1000"
 				>
 					×
 				</button>
 				{!showSuccess && (
-					<div className="flex flex-col items-center justify-center h-full">
-						<p className="text-3xl mb-4 underline">Mint NFT</p>
-						<div className="grid grid-cols-2 gap-4 text-lg w-full">
-							<p>Backing Price:</p>
-							<p className="">{price} BERA</p>
-							<p>Number to Mint:</p>
-							<input
-								type="text"
-								className="w-full p-2 rounded text-black"
-								value={numToMint}
-								onChange={handleNumToMintChange}
-								onBlur={handleNumToMintBlur}
-							/>
-							<button
-								disabled={priceTxActive}
-								className="col-span-2 bg-bentoPageBg text-white px-4 py-2 rounded mt-4"
-								style={{ height: "48px" }}
-								onClick={handleConfirmPrice}
-							>
-								{priceTxActive ? (
-									<div className="flex justify-center items-center" style={{ height: "100%" }}>
-										<img
-											src="/hero/mountains/planet-9.png"
-											alt="Stationary Planet"
-											className="rotate-forever"
-											style={{
-												filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
-												zIndex: 20,
-												height: "36px",
-											}}
+					<div className="flex flex-col items-center justify-center h-full z-500">
+						<p className="text-3xl mb-4 underline">{shouldMint ? "Mint NFT" : "Burn NFT"}</p>
+						<div className="flex flex-col text-lg w-full gap-4">
+							<div className="flex flex-row justify-center items-center">
+								<div className="w-1/5 h-16 text-xl p-4 flex justify-center items-center bg-bentoColor4">
+									<p>{shouldMint ? "Price" : "Value"}</p>
+								</div>
+								<div className="w-4/5 h-16 text-2xl p-4 flex justify-center items-center bg-bentoColor1">
+									<p>{price} BERA</p>
+								</div>
+							</div>
+							<div className="flex flex-row justify-center items-center">
+								<div className="w-1/5 h-16 text-xl p-4 flex justify-center items-center bg-bentoColor4">
+									<p>Number to {shouldMint ? "Mint" : "Burn"}</p>
+								</div>
+								<div className="w-4/5 h-16 text-2xl p-4 flex justify-center items-center bg-bentoColor1">
+									<input
+										type="text"
+										className="w-full p-2 rounded text-black bg-bentoColor1 h-full"
+										value={numToMint}
+										onChange={handleNumToMintChange}
+										onBlur={handleNumToMintBlur}
+										disabled={priceTxActive || mintTxActive}
+									/>
+								</div>
+							</div>
+							<div className="flex flex-row justify-center items-center">
+								<div className="w-1/5 h-16 text-xl p-4 flex justify-center items-center bg-bentoColor4">
+									<p>Total {shouldMint ? "Price" : "Value"}</p>
+								</div>
+								<div className="w-4/5 h-16 text-2xl p-4 flex justify-center items-center bg-bentoColor1 relative">
+									{priceTxActive || mintTxActive ? (
+										<div className="flex justify-center items-center w-full h-16">
+											<div key="1" className="animate-vflip4 scene w-1/4 h-16 bg-bentoPageBg"></div>
+											<div key="1" className="animate-vflip2 scene w-1/4 h-16 bg-bentoColor5"></div>
+											<div key="1" className="animate-vflip3 scene w-1/4 h-16 bg-bentoColor3"></div>
+											<div key="1" className="animate-vflip4 scene w-1/4 h-16 bg-bentoColor4"></div>
+										</div>
+									) : (
+										<input
+											type="text"
+											className="w-full p-2 rounded text-black bg-bentoColor1 h-full"
+											value={totalPrice!}
+											disabled
 										/>
-									</div>
-								) : (
-									"Confirm Price"
-								)}
-							</button>
-							{totalPrice !== null && (
-								<>
-									<p>Total Price:</p>
-									<p>{totalPrice} BERA</p>
-									<button
-										className="col-span-2 bg-bentoColor2 text-white px-4 py-2 rounded mt-4"
-										onClick={handleMintNow}
-										disabled={mintTxActive}
-									>
-										{mintTxActive ? (
-											<div className="flex justify-center items-center" style={{ height: "100%" }}>
-												<img
-													src="/hero/mountains/planet-9.png"
-													alt="Stationary Planet"
-													className="rotate-forever"
-													style={{
-														filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
-														zIndex: 20,
-														height: "36px",
-													}}
-												/>
-											</div>
-										) : (
-											"MINT NOW"
-										)}
-									</button>
-								</>
+									)}
+								</div>
+							</div>
+
+							{totalPrice ? (
+								<button
+									className="w-full bg-bentoColor2 text-white px-4 py-2 rounded mt-4 cursor-pointer hover:scale-105"
+									onClick={handleTransaction}
+									disabled={mintTxActive}
+								>
+									{mintTxActive ? (
+										<div className="flex justify-center items-center" style={{ height: "100%" }}>
+											<img
+												src="/hero/mountains/planet-9.png"
+												alt="Stationary Planet"
+												className="rotate-forever"
+												style={{
+													filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
+													zIndex: 20,
+													height: "36px",
+												}}
+											/>
+										</div>
+									) : shouldMint ? (
+										"MINT NOW"
+									) : (
+										"BURN NOW"
+									)}
+								</button>
+							) : (
+								<button
+									disabled={priceTxActive}
+									className="w-full bg-bentoPageBg text-white px-4 py-2 rounded mt-4 cursor-pointer hover:scale-105"
+									style={{ height: "48px" }}
+									onClick={handleConfirmPrice}
+								>
+									{priceTxActive ? (
+										<div className="flex justify-center items-center" style={{ height: "100%" }}>
+											<img
+												src="/hero/mountains/planet-9.png"
+												alt="Stationary Planet"
+												className="rotate-forever"
+												style={{
+													filter: "drop-shadow(0 0 40px rgba(0,0,0,1))",
+													zIndex: 20,
+													height: "36px",
+												}}
+											/>
+										</div>
+									) : (
+										"Confirm Price"
+									)}
+								</button>
 							)}
 						</div>
 					</div>
 				)}
 				{showSuccess && (
-					<div className="flex items-end justify-end h-full relative">
+					<div className="flex items-end justify-end h-full relative z-500">
 						<video
 							ref={videoRef}
 							src="/hero/video-sprites/bear1.webm"
@@ -151,9 +198,11 @@ const MintNftOverlay: React.FC<MintNftOverlayProps> = ({ nftMetadata, onClose, p
 								zIndex: 15,
 							}}
 						></video>
-						<div className="speech-bubble absolute" style={{ bottom: "150px", right: "150px" }}>
-							<p className="text-8xl font-bold">Bope!</p>
-							<p className="text-3xl font-bold">Congrats on the mint.</p>
+						<div className="speech-bubbleErc20 absolute" style={{ bottom: "150px", right: "130px" }}>
+							<p className="text-6xl font-bold">Bope!</p>
+							<p className="text-xl font-bold">
+								You {shouldMint ? "minted" : "burned"} {numToMint} NFTs for {totalPrice} $BERA.
+							</p>
 							<Link href="#" className="text-sm underline decoration-bentoColor2 text-left">
 								- Contract
 							</Link>

@@ -109,6 +109,19 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 		<div className="flex flex-col w-full h-full bg-bentoBg mt-[100px] relative">
 			{showMintOverlay && nftMetadata && (
 				<MintNftOverlay
+					shouldMint={true}
+					nftMetadata={nftMetadata}
+					onClose={() => setShowMintOverlay(false)}
+					price={nftMetadata.price ?? "0.0"}
+					onMintSuccess={() => {
+						fetchMetadata();
+						fetchHoldings();
+					}}
+				/>
+			)}
+			{showBurnOverlay && nftMetadata && (
+				<MintNftOverlay
+					shouldMint={false}
 					nftMetadata={nftMetadata}
 					onClose={() => setShowMintOverlay(false)}
 					price={nftMetadata.price ?? "0.0"}

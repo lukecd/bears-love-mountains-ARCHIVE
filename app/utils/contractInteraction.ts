@@ -98,12 +98,12 @@ export const getAllNFTMetadata = async (): Promise<NFTMetadata[]> => {
 	return Promise.all(metadataPromises);
 };
 
-export const getNFTPrice = async (id: bigint, quantity: bigint): Promise<bigint> => {
+export const getNFTPrice = async (id: bigint, quantity: bigint, isMint: boolean): Promise<bigint> => {
 	const price = await publicClient.readContract({
 		address: bearsLoveMountainsAddress as Address,
 		abi: bearsLoveMountainsAbi,
 		functionName: "getPrice",
-		args: [id, quantity, true],
+		args: [id, quantity, isMint],
 	});
 
 	return price;
@@ -129,7 +129,7 @@ export const mintNFT = async (id: bigint, quantity: bigint): Promise<boolean> =>
 			const [account] = await client.getAddresses();
 			console.log({ account });
 
-			const price = await getNFTPrice(id, quantity);
+			const price = await getNFTPrice(id, quantity, true);
 			console.log({ price });
 
 			const hash = await client.writeContract({
