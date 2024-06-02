@@ -215,7 +215,7 @@ export const getErc20BalanceForUser = async (address: string): Promise<bigint> =
 };
 
 /**                              ERC20 WRITING  																	 */
-export const mintErc20 = async (quantity: bigint): Promise<boolean> => {
+export const mintErc20 = async (quantity: string): Promise<boolean> => {
 	try {
 		if (client) {
 			console.log({ client });
