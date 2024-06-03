@@ -136,7 +136,7 @@ const NFTView: React.FC<NFTViewProps> = ({ id }) => {
 				<p className={inter.className}>
 					Burns are taxed 3% {"=>"} Which is used to buy{" "}
 					<Link className="underline decoration-bentoColor2" href="/memecoin">
-						meme coins
+						$BMEME coins
 					</Link>{" "}
 					{"=>"} Which are distributed to NFT holders.
 				</p>

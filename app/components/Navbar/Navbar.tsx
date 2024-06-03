@@ -30,10 +30,10 @@ const Navbar = () => {
 									Home
 								</Link>
 								<Link href="/nfts" className="block px-4 py-2 text-text hover:text-soldTextColor">
-									NFTs
+									$BMTN NFTs
 								</Link>
 								<Link href="/memecoin" className="block px-4 py-2 text-text hover:text-soldTextColor">
-									Memecoin
+									$BMEME ERC20s
 								</Link>
 								<Link href="/rewards" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									Rewards

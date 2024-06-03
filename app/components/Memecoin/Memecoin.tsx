@@ -98,10 +98,10 @@ const Memecoin: React.FC = () => {
 				/>
 			)}
 			<div className="text-white flex flex-col justify-center text-center mb-10">
-				<p className="text-2xl">Memecoins are priced on a bonding curve.</p>
+				<p className="text-2xl">$BMEME is priced on a bonding curve.</p>
 				<p className="">
 					Mint them {"=>"} Burn them {"=> "}
-					<Link className="underline decoration-bentoColor2" href="/memecoin">
+					<Link className="underline decoration-bentoColor2" href="/rewards">
 						Earn them as rewards for holding NFTs.
 					</Link>{" "}
 				</p>
