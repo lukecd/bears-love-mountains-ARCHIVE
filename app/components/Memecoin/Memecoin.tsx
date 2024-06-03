@@ -97,7 +97,7 @@ const Memecoin: React.FC = () => {
 					}}
 				/>
 			)}
-			<div className=" text-white flex flex-col justify-center text-center">
+			<div className="text-white flex flex-col justify-center text-center mb-10">
 				<p className="text-2xl">Memecoins are priced on a bonding curve.</p>
 				<p className="">
 					Mint them {"=>"} Burn them {"=> "}

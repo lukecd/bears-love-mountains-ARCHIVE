@@ -2,6 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { getNFTPrice, mintNFT, burnNFT } from "../../utils/contractInteraction";
 import { formatUnits } from "viem";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+	subsets: ["latin"],
+	display: "swap",
+});
 
 interface NFTMetadata {
 	id: string;
@@ -203,13 +209,17 @@ const MintNftOverlay: React.FC<MintNftOverlayProps> = ({ nftMetadata, onClose, p
 							<p className="text-xl font-bold">
 								You {shouldMint ? "minted" : "burned"} {numToMint} NFTs for {totalPrice} $BERA.
 							</p>
-							<Link href="#" className="text-sm underline decoration-bentoColor2 text-left">
-								- Contract
-							</Link>
-							<br />
-							<Link href="#" className="text-sm underline  decoration-bentoColor2 text-left">
-								- Transaction
-							</Link>
+							<div className={`text-center  ${inter.className}`}>
+								(
+								<Link href="#" className="text-sm underline decoration-bentoColor2 text-left">
+									Contract
+								</Link>
+								{" • "}
+								<Link href="#" className="text-sm underline decoration-bentoColor2 text-left">
+									Transaction
+								</Link>
+								)
+							</div>
 						</div>
 					</div>
 				)}

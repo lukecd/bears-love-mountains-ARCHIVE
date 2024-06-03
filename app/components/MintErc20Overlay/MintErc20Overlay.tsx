@@ -3,6 +3,12 @@ import Link from "next/link";
 import { getErc20BalanceForUser, getErc20Price, getErc20Supply } from "../../utils/contractInteraction";
 import { formatUnits } from "viem";
 import { useAccount } from "wagmi";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+	subsets: ["latin"],
+	display: "swap",
+});
 
 interface MintErc20OverlayProps {
 	onClose: () => void;
@@ -230,13 +236,17 @@ const MintErc20Overlay: React.FC<MintErc20OverlayProps> = ({ onClose, onMintSucc
 							<p className="text-xl font-bold">
 								You minted {numToMint} $BMEME for {totalPrice} $BERA.
 							</p>
-							<Link href="#" className="text-sm underline decoration-bentoColor2 text-left">
-								- Contract
-							</Link>
-							<br />
-							<Link href="#" className="text-sm underline  decoration-bentoColor2 text-left">
-								- Transaction
-							</Link>
+							<div className={`text-center  ${inter.className}`}>
+								(
+								<Link href="#" className="text-sm underline decoration-bentoColor2 text-left">
+									Contract
+								</Link>
+								{" • "}
+								<Link href="#" className="text-sm underline decoration-bentoColor2 text-left">
+									Transaction
+								</Link>
+								)
+							</div>
 						</div>
 					</div>
 				)}
