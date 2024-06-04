@@ -41,7 +41,7 @@ const Navbar = () => {
 								<Link href="/portfolio" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									Portfolio
 								</Link>
-								<Link href="/docs" className="block px-4 py-2 text-text hover:text-soldTextColor">
+								<Link href="/docs/overview" className="block px-4 py-2 text-text hover:text-soldTextColor">
 									Docs
 								</Link>
 							</div>

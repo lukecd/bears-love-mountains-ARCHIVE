@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 const Footer: React.FC = () => {
 	return (
-		<div className="bg-footerBg text-buttonAccent w-full relative z-20">
+		<div className="bg-footerBg text-buttonAccent w-full relative z-500">
 			<div className="container flex flex-row items-start">
 				<div className="text-center md:text-left md:w-1/2 lg:w-2/3 px-10">
 					<p className="text-lg lg:text-xl">In the mountain mist,</p>

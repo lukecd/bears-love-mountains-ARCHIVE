@@ -2,9 +2,8 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import Link from "next/link";
-import Navbar from "@/app/components/Navbar";
+
 import { Inter } from "next/font/google";
-import Footer from "@/app/components/Footer";
 
 const inter = Inter({
 	subsets: ["latin"],
@@ -13,9 +12,8 @@ const inter = Inter({
 
 const Page = () => {
 	return (
-		<div className="">
-			<Navbar />
-			<div className="flex flex-col  mt-[100px]  mb-5 px-10 text-black">
+		<div className="text-white ml-[170px] mt-[100px]">
+			<div className="flex flex-col  mb-5 px-10 ">
 				<div className="w-full md:w-3/4 text-xl text-end mt-10">
 					<p className={inter.className}>Original photographs. Shot in Patagonia. </p>
 					<p className={inter.className}>(The mountains, not the clothing brand.)</p>
@@ -123,7 +121,6 @@ const Page = () => {
 					<p className={inter.className}>Contract address: {process.env.NEXT_PUBLIC_NFT_CONTRACT}</p>
 				</div>{" "}
 			</div>
-			<Footer />
 		</div>
 	);
 };

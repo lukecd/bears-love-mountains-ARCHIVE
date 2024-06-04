@@ -3,11 +3,8 @@ import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import Hero from "@/app/components/Hero";
-import Navbar from "@/app/components/Navbar";
 import NFTView from "@/app/components/NFTView";
 import { useRouter } from "next/navigation";
-
-import Footer from "@/app/components/Footer";
 
 type PageProps = {
 	params: {
@@ -21,9 +18,7 @@ const Page: React.FC<PageProps> = ({ params }) => {
 
 	return (
 		<main className="w-full h-screen ">
-			<Navbar />
 			<NFTView id={id} />
-			<Footer />
 		</main>
 	);
 };
