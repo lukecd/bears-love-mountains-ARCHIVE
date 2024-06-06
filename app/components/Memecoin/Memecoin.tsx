@@ -14,13 +14,16 @@ const Memecoin: React.FC = () => {
 	const [price, setPrice] = useState<string>("");
 	const [supply, setSupply] = useState<string>("");
 	const [myBalance, setMyBalance] = useState<string>("");
+	const [mintMode, setSetMintMode] = useState<boolean>(true);
 
 	const handleMint = () => {
+		setSetMintMode(true);
 		setShowMintOverlay(true);
 	};
 
 	const handleBurn = () => {
-		// Empty function for Burn button
+		setSetMintMode(false);
+		setShowMintOverlay(true);
 	};
 
 	useEffect(() => {
@@ -41,13 +44,15 @@ const Memecoin: React.FC = () => {
 	}, []);
 
 	const fetchDetails = async () => {
+		console.log("fetchDetails");
 		try {
-			const newPrice = await getErc20Price("1");
+			// TODO: something is wrong with the price getting
+			// const newPrice = await getErc20Price("1");
 			const newSupply = await getErc20Supply();
-			console.log({ newPrice });
+			// console.log({ newPrice });
 			console.log({ newSupply });
 
-			setPrice(formatUnits(BigInt(newPrice), 18));
+			// setPrice(formatUnits(BigInt(newPrice), 18));
 			setSupply(newSupply.toString());
 		} catch (error) {
 			console.error("Error fetching NFT holdings:", error);
@@ -91,6 +96,7 @@ const Memecoin: React.FC = () => {
 			{showMintOverlay && (
 				<MintErc20Overlay
 					onClose={() => setShowMintOverlay(false)}
+					shouldMint={mintMode}
 					onMintSuccess={() => {
 						fetchDetails();
 						fetchHoldings();

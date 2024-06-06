@@ -1,13 +1,15 @@
 import { Address, createPublicClient, formatUnits, http, createWalletClient, custom, parseEther } from "viem";
 import getConfig from "next/config";
-import { bearsLoveMemesAbi } from "../abis/BearsLoveMemes";
-import { bearsLoveMountainsAbi } from "../abis/BearsLoveMountains";
-import { bearsLoveDefiAbi } from "../abis/BearsLoveDefi";
+import { bearsLoveMemesAbi } from "../abis/BearsLoveMemesAbi";
+import { bearsLoveMountainsAbi } from "../abis/BearsLoveMountainsAbi";
+import { bearsLoveDefiAbi } from "../abis/BearsLoveDefiAbi";
+
 import { sepolia } from "viem/chains";
 import { sep } from "path";
 
 const bearsLoveMemesAddress = process.env.NEXT_PUBLIC_MEME_CONTRACT_ADDRESS;
 const bearsLoveMountainsAddress = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS;
+const baseAssetAddress = process.env.NEXT_PUBLIC_BASE_ASSET_ADDRESS;
 
 const publicClient = createPublicClient({
 	chain: sepolia,
@@ -25,6 +27,13 @@ if (typeof window !== "undefined" && window.ethereum) {
 	client = null;
 	console.error("Ethereum provider is not available");
 }
+
+/**                               MISC FUNCTIONS																 */
+export const getEthBalanceForUser = async (address: string): Promise<bigint> => {
+	const convertedAddress = address as Address;
+	const balance = await publicClient.getBalance({ address: convertedAddress });
+	return balance;
+};
 
 /**                               NFT FUNCTIONS																	 */
 /**                               NFT READING 																	 */
@@ -180,6 +189,19 @@ export const burnNFT = async (id: bigint, quantity: bigint): Promise<boolean> =>
 
 /**                               ERC20 FUNCTIONS																	 */
 /**                               ERC20 READING 																	 */
+export const calculateTokensForETH = async (quantity: string): Promise<bigint> => {
+	const quantityBigInt = parseEther(quantity);
+
+	const price = await publicClient.readContract({
+		address: bearsLoveMemesAddress as Address,
+		abi: bearsLoveMemesAbi,
+		functionName: "calculateTokensForETH",
+		args: [quantityBigInt],
+	});
+
+	return price;
+};
+
 export const getErc20Price = async (quantity: string): Promise<bigint> => {
 	const quantityBigInt = parseEther(quantity);
 
@@ -194,43 +216,38 @@ export const getErc20Price = async (quantity: string): Promise<bigint> => {
 };
 
 export const getErc20Supply = async (): Promise<bigint> => {
+	console.log("supply");
 	const supply = await publicClient.readContract({
 		address: bearsLoveMemesAddress as Address,
 		abi: bearsLoveMemesAbi,
 		functionName: "circulatingSupply",
 	});
-
+	console.log({ supply });
 	return supply;
 };
 
 export const getErc20BalanceForUser = async (address: string): Promise<bigint> => {
-	const supply = await publicClient.readContract({
+	const balance = await publicClient.readContract({
 		address: bearsLoveMemesAddress as Address,
 		abi: bearsLoveMemesAbi,
 		functionName: "balanceOf",
 		args: [address as Address],
 	});
 
-	return supply;
+	return balance;
 };
 
 /**                              ERC20 WRITING  																	 */
-export const mintErc20 = async (quantity: string): Promise<boolean> => {
+export const mintErc20 = async (quantityOfEth: string): Promise<boolean> => {
 	try {
 		if (client) {
-			console.log({ client });
-
 			const [account] = await client.getAddresses();
-			console.log({ account });
-
-			const price = await getErc20Price(quantity);
-			console.log({ price });
-
+			const quantityInWei = parseEther(quantityOfEth);
 			const hash = await client.writeContract({
 				address: bearsLoveMemesAddress as Address,
 				abi: bearsLoveMemesAbi,
 				functionName: "mintWithETH",
-				value: price,
+				value: quantityInWei,
 				account,
 			});
 			console.log({ hash });

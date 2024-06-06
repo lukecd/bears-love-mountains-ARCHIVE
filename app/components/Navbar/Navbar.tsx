@@ -2,10 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 
 const Navbar = () => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+	const router = useRouter();
+	const pathname = usePathname();
+	console.log({ pathname });
+	if (pathname === "/") {
+		return null;
+	}
 	return (
 		<>
 			<div
@@ -26,22 +32,46 @@ const Navbar = () => {
 						</button>
 						{isMenuOpen && (
 							<div className="absolute right-0 mt-2 py-2 w-48 bg-bg rounded-lg shadow-xl shadow-accent">
-								<Link href="/" className="block px-4 py-2 text-text hover:text-soldTextColor">
+								<Link
+									href="/"
+									className="block px-4 py-2 text-text hover:text-soldTextColor"
+									onClick={() => setIsMenuOpen(false)}
+								>
 									Home
 								</Link>
-								<Link href="/nfts" className="block px-4 py-2 text-text hover:text-soldTextColor">
+								<Link
+									href="/nfts"
+									className="block px-4 py-2 text-text hover:text-soldTextColor"
+									onClick={() => setIsMenuOpen(false)}
+								>
 									$BMTN NFTs
 								</Link>
-								<Link href="/memecoin" className="block px-4 py-2 text-text hover:text-soldTextColor">
+								<Link
+									href="/memecoin"
+									className="block px-4 py-2 text-text hover:text-soldTextColor"
+									onClick={() => setIsMenuOpen(false)}
+								>
 									$BMEME ERC20s
 								</Link>
-								<Link href="/rewards" className="block px-4 py-2 text-text hover:text-soldTextColor">
+								<Link
+									href="/rewards"
+									className="block px-4 py-2 text-text hover:text-soldTextColor"
+									onClick={() => setIsMenuOpen(false)}
+								>
 									Rewards
 								</Link>
-								<Link href="/portfolio" className="block px-4 py-2 text-text hover:text-soldTextColor">
+								<Link
+									href="/portfolio"
+									className="block px-4 py-2 text-text hover:text-soldTextColor"
+									onClick={() => setIsMenuOpen(false)}
+								>
 									Portfolio
 								</Link>
-								<Link href="/docs/overview" className="block px-4 py-2 text-text hover:text-soldTextColor">
+								<Link
+									href="/docs/overview"
+									className="block px-4 py-2 text-text hover:text-soldTextColor"
+									onClick={() => setIsMenuOpen(false)}
+								>
 									Docs
 								</Link>
 							</div>
